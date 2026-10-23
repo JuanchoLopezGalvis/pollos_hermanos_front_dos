@@ -1,0 +1,242 @@
+.eyebrow {
+  display: inline-block;
+  margin-bottom: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--ph-texto-suave);
+}
+
+/* ---------- Franja del ciclo ---------- */
+
+.ciclo {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 28px 48px;
+  padding: 32px;
+  margin-bottom: 40px;
+  border-radius: 28px;
+  background: var(--ph-verde-900);
+  color: var(--ph-fondo);
+}
+
+.ciclo::after {
+  content: '';
+  position: absolute;
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  background: var(--ph-yema);
+  right: -110px;
+  top: -150px;
+}
+
+.ciclo-texto {
+  flex: 1 1 280px;
+  position: relative;
+  z-index: 1;
+}
+
+.ciclo-texto h2 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.ciclo-texto p {
+  color: #c9d5cd;
+  max-width: 420px;
+}
+
+.ciclo ol {
+  flex: 2 1 480px;
+  position: relative;
+  z-index: 1;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.ciclo li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 16px;
+  border-radius: 16px;
+  background: var(--ph-verde-800);
+}
+
+.ciclo strong {
+  font-weight: 600;
+}
+
+.ciclo small {
+  font-size: 0.82rem;
+  color: var(--ph-texto-claro);
+}
+
+.punto {
+  width: 10px;
+  height: 10px;
+  margin-bottom: 10px;
+  border-radius: 50%;
+}
+
+.p1 { background: var(--ph-yema); }
+.p2 { background: #6e9a7e; }
+.p3 { background: var(--ph-verde-500); }
+.p4 { background: #8fb39c; }
+
+/* ---------- Módulos ---------- */
+
+.bloque {
+  margin-bottom: 40px;
+}
+
+.bloque > h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.grid-modulos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.modulo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  min-height: 220px;
+  padding: 24px;
+  border: 0;
+  border-radius: 24px;
+  background: var(--ph-superficie);
+  color: var(--ph-tinta);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(19, 38, 28, 0.04), 0 12px 32px -20px rgba(19, 38, 28, 0.25);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.modulo:not(:disabled):hover {
+  transform: translateY(-3px);
+  box-shadow: 0 1px 2px rgba(19, 38, 28, 0.04), 0 20px 40px -20px rgba(19, 38, 28, 0.35);
+}
+
+.modulo:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.icono {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 6px;
+  border-radius: 14px;
+  background: var(--ph-verde-100);
+  color: var(--ph-verde-700);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+}
+
+.modulo h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.modulo p {
+  color: var(--ph-texto-suave);
+  font-size: 0.95rem;
+}
+
+.estado {
+  margin-top: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 0.92rem;
+}
+
+.modulo.destacado {
+  background: var(--ph-yema);
+}
+
+.modulo.destacado .icono {
+  background: var(--ph-tinta);
+  color: var(--ph-yema);
+}
+
+.modulo.destacado p {
+  color: #3d3200;
+}
+
+/* ---------- Próximamente ---------- */
+
+.grid-proximos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.proximo {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  padding: 18px 20px;
+  border-radius: 18px;
+  border: 1.5px dashed var(--ph-borde);
+}
+
+.proximo i {
+  margin-top: 3px;
+  color: var(--ph-verde-500);
+  font-size: 1.1rem;
+}
+
+.proximo h3 {
+  font-family: var(--ph-cuerpo);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.proximo p {
+  font-size: 0.88rem;
+  color: var(--ph-texto-suave);
+}
+
+.pie {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 24px;
+  border-top: 1px solid var(--ph-linea);
+  font-size: 0.82rem;
+  color: var(--ph-texto-suave);
+}
+
+@media (max-width: 700px) {
+  .ciclo {
+    padding: 24px;
+  }
+
+  .ciclo::after {
+    display: none;
+  }
+
+  .ciclo ol {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

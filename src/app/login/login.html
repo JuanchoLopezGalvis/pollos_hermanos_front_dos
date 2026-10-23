@@ -1,0 +1,92 @@
+<div class="login-page">
+  <section class="presentacion">
+    <div class="sol" aria-hidden="true"></div>
+    <div class="anillo" aria-hidden="true"></div>
+
+    <div class="marca">
+      <img src="logo.svg" alt="" class="marca-logo" />
+      <div>
+        <span class="marca-nombre">Los Pollos Hermanos</span>
+        <span class="marca-sub">Finca avícola · producción y venta</span>
+      </div>
+    </div>
+
+    <div class="lema animate__animated animate__fadeInUp">
+      <h1>Cada lote, del primer día hasta la venta.</h1>
+      <p>Galpones, alimentación, sanidad, costos y cartera en un solo lugar, con alertas cuando algo se sale de lo normal.</p>
+    </div>
+
+    <div class="ciclo">
+      <span class="ciclo-titulo">Ciclo de engorde</span>
+      <ol>
+        <li class="etapa-1"><strong>Preiniciación</strong><span>Días 1 a 7</span></li>
+        <li class="etapa-2"><strong>Iniciación</strong><span>Días 8 a 21</span></li>
+        <li class="etapa-3"><strong>Engorde</strong><span>Días 22 a 35</span></li>
+        <li class="etapa-4"><strong>Finalización</strong><span>Día 36 a la venta</span></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="acceso">
+    <form [formGroup]="form" (ngSubmit)="onSubmit($event)" novalidate class="animate__animated animate__fadeIn">
+      <div class="titulo">
+        <h2>Bienvenido de nuevo</h2>
+        <p>Ingresa con tu usuario o tu correo.</p>
+      </div>
+
+      <div class="field">
+        <label for="usuario">Usuario o correo</label>
+        <input
+          id="usuario"
+          pInputText
+          type="text"
+          formControlName="usuario"
+          autocomplete="username"
+          [attr.aria-invalid]="f['usuario'].invalid && f['usuario'].touched"
+        />
+        <small class="err" *ngIf="f['usuario'].invalid && f['usuario'].touched">
+          El usuario es obligatorio.
+        </small>
+      </div>
+
+      <div class="field">
+        <label for="contrasena">Contraseña</label>
+        <p-password
+          inputId="contrasena"
+          formControlName="contrasena"
+          [toggleMask]="true"
+          [feedback]="false"
+          styleClass="clave"
+          autocomplete="current-password">
+        </p-password>
+        <small class="err" *ngIf="f['contrasena'].invalid && f['contrasena'].touched">
+          La contraseña es obligatoria.
+        </small>
+      </div>
+
+      <label class="remember">
+        <input type="checkbox" formControlName="remember" />
+        Recordar mi usuario
+      </label>
+
+      <p-button
+        type="submit"
+        styleClass="btn-entrar"
+        [label]="loading ? 'Entrando...' : 'Entrar'"
+        icon="pi pi-arrow-right"
+        iconPos="right"
+        [loading]="loading"
+        [disabled]="loading">
+      </p-button>
+
+      <p class="mensaje" role="alert" *ngIf="errorMsg">
+        <i class="pi pi-exclamation-circle" aria-hidden="true"></i>
+        {{ errorMsg }}
+      </p>
+    </form>
+
+    <span class="copyright">
+      &copy; {{ anio }} Los Pollos Hermanos · Universidad El Bosque · Bases de Datos 2
+    </span>
+  </section>
+</div>

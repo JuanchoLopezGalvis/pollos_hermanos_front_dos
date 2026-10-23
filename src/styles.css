@@ -1,0 +1,302 @@
+/* Estilos globales de Los Pollos Hermanos (propuesta "Campo vivo"). Los componentes solo agregan lo propio de cada pantalla. */
+
+:root {
+  --ph-fondo: #f3f5f1;
+  --ph-superficie: #ffffff;
+  --ph-tinta: #13261c;
+  --ph-verde-900: #13261c;
+  --ph-verde-800: #1d3528;
+  --ph-verde-700: #2f5a41;
+  --ph-verde-500: #4c7a5e;
+  --ph-verde-100: #e3efe7;
+  --ph-yema: #f2b705;
+  --ph-yema-suave: #fdf0c4;
+  --ph-tomate: #b23a1b;
+  --ph-tomate-suave: #fbe1da;
+  --ph-texto-suave: #56665c;
+  --ph-texto-claro: #b9c7be;
+  --ph-linea: #e3e9e5;
+  --ph-borde: #cbd5ce;
+  --ph-display: 'Bricolage Grotesque', 'Segoe UI', sans-serif;
+  --ph-cuerpo: 'Instrument Sans', -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --sidebar-width: 264px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  min-height: 100%;
+}
+
+body {
+  font-family: var(--ph-cuerpo);
+  background: var(--ph-fondo);
+  color: var(--ph-tinta);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+}
+
+h1, h2, h3 {
+  font-family: var(--ph-display);
+  letter-spacing: -0.02em;
+}
+
+:focus-visible {
+  outline: 3px solid var(--ph-yema);
+  outline-offset: 2px;
+}
+
+/* ---------- Distribución de las pantallas internas: menú lateral fijo y contenido ---------- */
+
+.body-wrapper {
+  min-height: 100vh;
+  background: var(--ph-fondo);
+}
+
+.glass-container {
+  display: flex;
+  min-height: 100vh;
+}
+
+.content {
+  flex: 1;
+  min-width: 0;
+  max-width: 1320px;
+  padding: 44px clamp(20px, 4vw, 56px) 64px;
+}
+
+.content header {
+  margin-bottom: 28px;
+}
+
+.content header h1 {
+  font-size: clamp(2rem, 3.4vw, 2.75rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  margin-bottom: 6px;
+}
+
+.content header p {
+  color: var(--ph-texto-suave);
+  font-size: 1.05rem;
+}
+
+/* ---------- Tarjetas y formularios ---------- */
+
+.card {
+  background: var(--ph-superficie);
+  border-radius: 24px;
+  padding: 28px;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 2px rgba(19, 38, 28, 0.04), 0 12px 32px -20px rgba(19, 38, 28, 0.25);
+}
+
+.card h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 18px;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+  margin-bottom: 24px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px 18px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field label {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.field input,
+.field textarea,
+.field select {
+  width: 100%;
+}
+
+.field textarea {
+  min-height: 88px;
+  resize: vertical;
+}
+
+.field-full {
+  grid-column: 1 / -1;
+}
+
+.err {
+  color: var(--ph-tomate);
+  font-size: 0.82rem;
+  font-weight: 500;
+}
+
+.form-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 24px;
+  flex-wrap: wrap;
+}
+
+.check-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px;
+}
+
+.check-list label {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: 12px;
+  background: var(--ph-fondo);
+  font-size: 0.92rem;
+  cursor: pointer;
+}
+
+.check-list input,
+.check input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--ph-verde-900);
+}
+
+/* ---------- Ajustes de PrimeNG ---------- */
+
+.p-inputtext {
+  min-height: 48px;
+  border-radius: 14px !important;
+  border-width: 1.5px !important;
+  font-family: var(--ph-cuerpo) !important;
+}
+
+.p-button {
+  min-height: 44px;
+  border-radius: 14px !important;
+  font-family: var(--ph-cuerpo) !important;
+  font-weight: 600 !important;
+}
+
+.p-button.p-button-warn:not(.p-button-text):not(.p-button-outlined) {
+  background: var(--ph-yema) !important;
+  border-color: var(--ph-yema) !important;
+  color: var(--ph-tinta) !important;
+}
+
+.p-button.p-button-warn:not(.p-button-text):not(.p-button-outlined):hover {
+  background: #dba504 !important;
+  border-color: #dba504 !important;
+}
+
+/* ---------- Tablas ---------- */
+
+.table-wrapper {
+  overflow-x: auto;
+  background: var(--ph-superficie);
+  border-radius: 20px;
+  box-shadow: 0 1px 2px rgba(19, 38, 28, 0.04), 0 12px 32px -20px rgba(19, 38, 28, 0.25);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.data-table th,
+.data-table td {
+  padding: 14px 20px;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.data-table th {
+  color: var(--ph-texto-suave);
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.data-table tbody tr {
+  border-top: 1px solid var(--ph-linea);
+}
+
+.data-table tbody tr:hover {
+  background: #f8faf7;
+}
+
+.data-table .acciones {
+  white-space: nowrap;
+  text-align: right;
+}
+
+.chip {
+  display: inline-block;
+  padding: 3px 10px;
+  margin: 2px 4px 2px 0;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: var(--ph-yema-suave);
+  color: #6b4e00;
+}
+
+.chip.rojo {
+  background: var(--ph-tomate-suave);
+  color: #9a2e12;
+}
+
+.chip.verde {
+  background: var(--ph-verde-100);
+  color: #1f4630;
+}
+
+.loading,
+.no-data,
+.error {
+  padding: 40px 24px;
+  text-align: center;
+  color: var(--ph-texto-suave);
+  background: var(--ph-superficie);
+  border-radius: 20px;
+}
+
+.error {
+  color: #9a2e12;
+  background: var(--ph-tomate-suave);
+  font-weight: 500;
+}
+
+@media (max-width: 900px) {
+  .glass-container {
+    flex-direction: column;
+  }
+
+  .content {
+    padding: 28px 16px 48px;
+  }
+}

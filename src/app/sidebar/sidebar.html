@@ -1,0 +1,37 @@
+<aside class="sidebar">
+  <a routerLink="/menu" class="logo">
+    <img src="logo.svg" alt="" />
+    <span>Los Pollos<br />Hermanos</span>
+  </a>
+
+  <nav class="menu" aria-label="Menú principal">
+    <ul>
+      <li routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        <a routerLink="/menu"><i class="pi pi-th-large" aria-hidden="true"></i><span>Inicio</span></a>
+      </li>
+      <li routerLinkActive="active" *ngIf="auth.tieneAlguno(['seguimiento.ver', 'seguimiento.registrar'])">
+        <a routerLink="/seguimiento"><i class="pi pi-chart-bar" aria-hidden="true"></i><span>Seguimiento</span></a>
+      </li>
+      <li routerLinkActive="active" *ngIf="auth.tienePermiso('usuario.gestionar')">
+        <a routerLink="/usuarios"><i class="pi pi-users" aria-hidden="true"></i><span>Usuarios</span></a>
+      </li>
+      <li routerLinkActive="active" *ngIf="auth.tienePermiso('rol.gestionar')">
+        <a routerLink="/roles"><i class="pi pi-id-card" aria-hidden="true"></i><span>Roles</span></a>
+      </li>
+      <li routerLinkActive="active" *ngIf="auth.tieneAlguno(['rol.gestionar', 'usuario.gestionar'])">
+        <a routerLink="/permisos"><i class="pi pi-key" aria-hidden="true"></i><span>Permisos</span></a>
+      </li>
+    </ul>
+  </nav>
+
+  <div class="profile">
+    <div class="avatar" aria-hidden="true">{{ iniciales }}</div>
+    <div class="user-info">
+      <h3>{{ auth.nombreVisible }}</h3>
+      <p>{{ cargo }}</p>
+    </div>
+    <button type="button" class="salir" title="Cerrar sesión" aria-label="Cerrar sesión" (click)="logout()">
+      <i class="pi pi-sign-out" aria-hidden="true"></i>
+    </button>
+  </div>
+</aside>

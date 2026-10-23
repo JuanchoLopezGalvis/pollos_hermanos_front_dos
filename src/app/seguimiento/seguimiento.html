@@ -1,0 +1,158 @@
+<div class="body-wrapper">
+  <div class="glass-container">
+    <app-sidebar></app-sidebar>
+
+    <main class="content">
+      <header>
+        <h1>Seguimiento del crecimiento</h1>
+        <p>Registro diario de peso, condiciones del galpón y novedades de cada lote activo.</p>
+      </header>
+
+      <div class="toolbar">
+        <div class="field">
+          <label for="filtroLote">Código del lote</label>
+          <input id="filtroLote" pInputText type="text" placeholder="Ej. L-2026-01"
+                 [(ngModel)]="loteFiltro" (keyup.enter)="cargar()" maxlength="30" />
+        </div>
+        <p-button label="Buscar" icon="pi pi-search" (onClick)="cargar()"></p-button>
+        <p-button *ngIf="loteActual" label="Ver todos" icon="pi pi-times" severity="secondary" [outlined]="true"
+                  (onClick)="limpiarFiltro()"></p-button>
+        <span class="spacer"></span>
+        <p-button *ngIf="puedeRegistrar && !mostrarFormulario" label="Nuevo seguimiento" icon="pi pi-plus"
+                  severity="warn" (onClick)="nuevo()"></p-button>
+      </div>
+
+      <!-- Formulario -->
+      <section class="card animate__animated animate__fadeIn" *ngIf="mostrarFormulario">
+        <h2>{{ editandoId ? 'Editar seguimiento' : 'Registrar seguimiento' }}</h2>
+
+        <form [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+          <div class="form-grid">
+            <div class="field">
+              <label for="codigoLote">Código del lote *</label>
+              <input id="codigoLote" pInputText formControlName="codigoLote" maxlength="30" />
+              <small class="err" *ngIf="f['codigoLote'].invalid && f['codigoLote'].touched">El lote es obligatorio.</small>
+            </div>
+            <div class="field">
+              <label for="fecha">Fecha</label>
+              <input id="fecha" pInputText type="date" formControlName="fecha" [max]="hoy" />
+            </div>
+            <div class="field">
+              <label for="peso">Peso promedio (g)</label>
+              <input id="peso" pInputText type="number" step="0.1" formControlName="pesoPromedioGramos" />
+              <small class="err" *ngIf="f['pesoPromedioGramos'].invalid">Debe ser mayor que cero.</small>
+            </div>
+            <div class="field">
+              <label for="temp">Temperatura (°C)</label>
+              <input id="temp" pInputText type="number" step="0.1" formControlName="temperaturaCelsius" />
+              <small class="err" *ngIf="f['temperaturaCelsius'].invalid">Entre -10 y 60 °C.</small>
+            </div>
+            <div class="field">
+              <label for="humedad">Humedad relativa (%)</label>
+              <input id="humedad" pInputText type="number" step="0.1" formControlName="humedadRelativa" />
+              <small class="err" *ngIf="f['humedadRelativa'].invalid">Entre 0 y 100.</small>
+            </div>
+          </div>
+
+          <h3 class="subtitulo">Muestreo de peso</h3>
+          <div class="form-grid" formGroupName="muestreo">
+            <div class="field">
+              <label for="aves">Aves pesadas</label>
+              <input id="aves" pInputText type="number" step="1" formControlName="avesPesadas" />
+            </div>
+            <div class="field">
+              <label for="uniformidad">Uniformidad (%)</label>
+              <input id="uniformidad" pInputText type="number" step="0.1" formControlName="uniformidadPorcentaje" />
+            </div>
+          </div>
+          <small class="err" *ngIf="form.get('muestreo')?.invalid">
+            Si registras muestreo, llena las aves pesadas (entero mayor que cero) y la uniformidad (0 a 100).
+          </small>
+
+          <h3 class="subtitulo">
+            Novedades del galpón
+            <p-button type="button" label="Agregar" icon="pi pi-plus" size="small" [text]="true" (onClick)="agregarNovedad()"></p-button>
+          </h3>
+          <div formArrayName="novedades">
+            <p class="vacio" *ngIf="!novedades.length">Sin novedades.</p>
+            <div class="novedad" *ngFor="let n of novedades.controls; let i = index" [formGroupName]="i">
+              <input pInputText placeholder="Tipo (ej. ventilación)" formControlName="tipo" maxlength="60" />
+              <input pInputText placeholder="Descripción" formControlName="descripcion" maxlength="500" />
+              <p-button type="button" icon="pi pi-trash" severity="danger" [text]="true" ariaLabel="Quitar novedad"
+                        (onClick)="quitarNovedad(i)"></p-button>
+            </div>
+          </div>
+
+          <div class="field field-full obs">
+            <label for="obs">Observaciones</label>
+            <textarea id="obs" pInputText formControlName="observaciones" maxlength="1000"></textarea>
+          </div>
+
+          <div class="form-actions">
+            <p-button type="button" label="Cancelar" severity="secondary" [outlined]="true" (onClick)="cancelar()"></p-button>
+            <p-button type="submit" [label]="editandoId ? 'Guardar cambios' : 'Registrar'" icon="pi pi-check"
+                      [loading]="guardando"></p-button>
+          </div>
+        </form>
+      </section>
+
+      <!-- Curva semanal -->
+      <section class="card" *ngIf="loteActual && curva.length">
+        <h2>Curva de crecimiento semanal · lote {{ loteActual }}</h2>
+        <div class="curva">
+          <div class="barra" *ngFor="let c of curva">
+            <span class="valor">{{ c.pesoPromedioGramos | number:'1.0-0' }} g</span>
+            <div class="relleno" [style.height.%]="(c.pesoPromedioGramos / pesoMaximo) * 100"
+                 [attr.title]="c.registros + ' registros'"></div>
+            <span class="semana">Sem. {{ c.semana }}</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Tabla -->
+      <div *ngIf="loading" class="loading">Buscando información...</div>
+      <div *ngIf="!loading && errorMsg" class="error">{{ errorMsg }}</div>
+
+      <div class="table-wrapper" *ngIf="!loading && !errorMsg && seguimientos.length">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Lote</th>
+              <th>Día</th>
+              <th>Peso (g)</th>
+              <th>Temp. (°C)</th>
+              <th>Humedad (%)</th>
+              <th>Uniformidad</th>
+              <th>Novedades</th>
+              <th *ngIf="puedeRegistrar"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let s of seguimientos; trackBy: trackById">
+              <td>{{ s.fecha | date:'dd/MM/yyyy' }}</td>
+              <td>{{ s.codigoLote }}</td>
+              <td>{{ s.edadDias ?? '-' }}</td>
+              <td>{{ s.pesoPromedioGramos != null ? (s.pesoPromedioGramos | number:'1.0-1') : '-' }}</td>
+              <td>{{ s.temperaturaCelsius ?? '-' }}</td>
+              <td>{{ s.humedadRelativa ?? '-' }}</td>
+              <td>{{ s.muestreo ? (s.muestreo.uniformidadPorcentaje + '% de ' + s.muestreo.avesPesadas) : '-' }}</td>
+              <td>
+                <span class="chip" *ngFor="let n of s.novedades" [attr.title]="n.descripcion">{{ n.tipo }}</span>
+                <span *ngIf="!s.novedades?.length">-</span>
+              </td>
+              <td class="acciones" *ngIf="puedeRegistrar">
+                <p-button icon="pi pi-pencil" [text]="true" ariaLabel="Editar" (onClick)="editar(s)"></p-button>
+                <p-button icon="pi pi-trash" severity="danger" [text]="true" ariaLabel="Eliminar" (onClick)="eliminar(s)"></p-button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div *ngIf="!loading && !errorMsg && !seguimientos.length" class="no-data">
+        {{ loteActual ? 'El lote ' + loteActual + ' no tiene seguimientos registrados.' : 'No hay seguimientos registrados.' }}
+      </div>
+    </main>
+  </div>
+</div>

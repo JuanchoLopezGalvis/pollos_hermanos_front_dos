@@ -1,0 +1,65 @@
+<div class="body-wrapper">
+  <div class="glass-container">
+    <app-sidebar></app-sidebar>
+
+    <main class="content">
+      <header class="saludo animate__animated animate__fadeIn">
+        <span class="eyebrow">Panel general</span>
+        <h1>Hola, {{ auth.nombreVisible }}</h1>
+        <p>Elige un módulo para empezar. Los que aún no están listos aparecen como próximos.</p>
+      </header>
+
+      <section class="ciclo" aria-label="Ciclo de engorde">
+        <div class="ciclo-texto">
+          <h2>Ciclo de engorde</h2>
+          <p>Cada lote vive entre 40 y 50 días. La alimentación cambia según la edad y la mortalidad de referencia es del 5 %.</p>
+        </div>
+        <ol>
+          <li><span class="punto p1"></span><strong>Preiniciación</strong><small>Días 1 a 7</small></li>
+          <li><span class="punto p2"></span><strong>Iniciación</strong><small>Días 8 a 21</small></li>
+          <li><span class="punto p3"></span><strong>Engorde</strong><small>Días 22 a 35</small></li>
+          <li><span class="punto p4"></span><strong>Finalización</strong><small>Día 36 a la venta</small></li>
+        </ol>
+      </section>
+
+      <section class="bloque">
+        <h2>Módulos</h2>
+        <div class="grid-modulos">
+          <button
+            type="button"
+            *ngFor="let m of conPantalla; let i = index"
+            class="modulo"
+            [class.destacado]="i === 0 && disponible(m)"
+            [disabled]="!disponible(m)"
+            (click)="abrir(m)">
+            <span class="icono"><i [class]="m.icono" aria-hidden="true"></i></span>
+            <h3>{{ m.titulo }}</h3>
+            <p>{{ m.descripcion }}</p>
+            <span class="estado">
+              {{ estado(m) }}
+              <i class="pi pi-arrow-right" aria-hidden="true" *ngIf="disponible(m)"></i>
+            </span>
+          </button>
+        </div>
+      </section>
+
+      <section class="bloque">
+        <h2>Próximamente</h2>
+        <div class="grid-proximos">
+          <div class="proximo" *ngFor="let m of proximos">
+            <i [class]="m.icono" aria-hidden="true"></i>
+            <div>
+              <h3>{{ m.titulo }}</h3>
+              <p>{{ m.descripcion }}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <footer class="pie">
+        <span>&copy; {{ anio }} Los Pollos Hermanos · Bases de Datos 2 · Universidad El Bosque</span>
+        <span>Dylan Mancipe · Juan Diego López · Gabriela Poveda</span>
+      </footer>
+    </main>
+  </div>
+</div>

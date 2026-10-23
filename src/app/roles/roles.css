@@ -1,0 +1,10 @@
+.spacer {
+  flex: 1;
+}
+
+.subtitulo {
+  font-weight: 700;
+  margin: 22px 0 10px;
+  font-size: 0.95rem;
+  color: var(--ph-tinta);
+}

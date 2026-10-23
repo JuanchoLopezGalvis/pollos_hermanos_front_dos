@@ -1,0 +1,265 @@
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  flex-wrap: wrap;
+  background: var(--ph-fondo);
+}
+
+/* ---------- Panel verde de presentación ---------- */
+
+.presentacion {
+  flex: 1 1 560px;
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+  background: var(--ph-verde-900);
+  color: var(--ph-fondo);
+  padding: 56px clamp(24px, 5vw, 64px);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 48px;
+}
+
+.sol {
+  position: absolute;
+  width: 620px;
+  height: 620px;
+  border-radius: 50%;
+  background: var(--ph-yema);
+  right: -220px;
+  top: -180px;
+  animation: amanecer 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.anillo {
+  position: absolute;
+  width: 380px;
+  height: 380px;
+  border-radius: 50%;
+  border: 2px solid var(--ph-verde-700);
+  right: -60px;
+  bottom: -120px;
+}
+
+@keyframes amanecer {
+  from { transform: translateY(80px) scale(0.92); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+
+.marca,
+.lema,
+.ciclo {
+  position: relative;
+}
+
+.marca {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.marca-logo {
+  width: 48px;
+  height: 48px;
+}
+
+.marca div {
+  display: flex;
+  flex-direction: column;
+}
+
+.marca-nombre {
+  font-family: var(--ph-display);
+  font-weight: 800;
+  font-size: 1.25rem;
+}
+
+.marca-sub {
+  font-size: 0.82rem;
+  color: var(--ph-texto-claro);
+}
+
+.lema {
+  max-width: 560px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.lema h1 {
+  font-size: clamp(2.6rem, 5vw, 4.25rem);
+  font-weight: 700;
+  line-height: 0.98;
+  letter-spacing: -0.035em;
+}
+
+.lema p {
+  font-size: 1.125rem;
+  line-height: 1.55;
+  color: #c9d5cd;
+  max-width: 460px;
+}
+
+.ciclo-titulo {
+  display: block;
+  margin-bottom: 14px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ph-texto-claro);
+}
+
+.ciclo ol {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.ciclo li {
+  padding-top: 10px;
+  border-top: 3px solid;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ciclo strong {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.ciclo span {
+  font-size: 0.82rem;
+  color: var(--ph-texto-claro);
+}
+
+.etapa-1 { border-color: var(--ph-yema) !important; }
+.etapa-2 { border-color: #6e9a7e !important; }
+.etapa-3 { border-color: var(--ph-verde-500) !important; }
+.etapa-4 { border-color: var(--ph-verde-700) !important; }
+
+/* ---------- Formulario ---------- */
+
+.acceso {
+  flex: 1 1 480px;
+  padding: 56px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+}
+
+form {
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.titulo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.titulo h2 {
+  font-size: 2.25rem;
+  font-weight: 700;
+}
+
+.titulo p {
+  color: var(--ph-texto-suave);
+}
+
+.field input {
+  height: 52px;
+  background: var(--ph-superficie);
+}
+
+:host ::ng-deep .clave,
+:host ::ng-deep .clave input {
+  width: 100%;
+}
+
+:host ::ng-deep .clave input {
+  height: 52px;
+}
+
+.remember {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  color: #33443a;
+  cursor: pointer;
+}
+
+.remember input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--ph-verde-900);
+}
+
+:host ::ng-deep .btn-entrar {
+  width: 100%;
+  height: 56px;
+  border-radius: 16px !important;
+  background: var(--ph-yema) !important;
+  border-color: var(--ph-yema) !important;
+  color: var(--ph-tinta) !important;
+  font-size: 1.05rem;
+  font-weight: 700 !important;
+  box-shadow: 0 10px 24px -12px rgba(19, 38, 28, 0.55);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+:host ::ng-deep .btn-entrar:not(:disabled):hover {
+  transform: translateY(-1px);
+  background: #dba504 !important;
+  box-shadow: 0 14px 28px -12px rgba(19, 38, 28, 0.6);
+}
+
+.mensaje {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: var(--ph-tomate-suave);
+  color: #9a2e12;
+  font-size: 0.92rem;
+  font-weight: 500;
+}
+
+.mensaje i {
+  margin-top: 3px;
+}
+
+.copyright {
+  font-size: 0.8rem;
+  color: var(--ph-texto-suave);
+  text-align: center;
+}
+
+@media (max-width: 700px) {
+  .presentacion {
+    min-height: auto;
+  }
+
+  .ciclo ol {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 16px;
+  }
+
+  .sol {
+    width: 360px;
+    height: 360px;
+    right: -160px;
+    top: -140px;
+  }
+}
