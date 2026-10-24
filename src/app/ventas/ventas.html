@@ -1,0 +1,196 @@
+<div class="body-wrapper">
+  <div class="glass-container">
+    <app-sidebar></app-sidebar>
+
+    <main class="content">
+      <header>
+        <h1>Ventas y cartera</h1>
+        <p>Ventas en libras con precio fijo, pagos parciales o en línea (pasarela de pruebas, sin dinero real), entregas y cartera vencida.</p>
+      </header>
+
+      <div class="resumen">
+        <div class="dato"><strong>{{ vendidoTotal | currency:'COP':'$':'1.0-0' }}</strong><span>vendido</span></div>
+        <div class="dato"><strong>{{ saldoTotal | currency:'COP':'$':'1.0-0' }}</strong><span>por cobrar</span></div>
+        <div class="dato" *ngIf="puedeCartera"><strong [class.negativo]="carteraVencidaTotal > 0">{{ carteraVencidaTotal | currency:'COP':'$':'1.0-0' }}</strong><span>cartera vencida ({{ cartera.length }})</span></div>
+      </div>
+
+      <div class="toolbar">
+        <div class="tabs" role="tablist">
+          <button type="button" [class.activa]="pestana === 'ventas'" (click)="pestana = 'ventas'">Ventas</button>
+          <button type="button" [class.activa]="pestana === 'entregas'" (click)="pestana = 'entregas'">Entregas</button>
+          <button type="button" *ngIf="puedeCartera" [class.activa]="pestana === 'cartera'" (click)="pestana = 'cartera'">Cartera vencida</button>
+          <button type="button" *ngIf="puedeCartera" [class.activa]="pestana === 'clientes'" (click)="pestana = 'clientes'">Por cliente</button>
+        </div>
+      </div>
+
+      <!-- Detalle de la venta seleccionada -->
+      <section class="card animate__animated animate__fadeIn" *ngIf="seleccionada && pestana === 'ventas'">
+        <div class="encabezado-detalle">
+          <h2>Venta {{ seleccionada.idVenta }} · {{ seleccionada.cliente }}</h2>
+          <span class="chip" [ngClass]="claseVenta(seleccionada)">{{ estadosVenta[seleccionada.estado] }}</span>
+          <span class="spacer"></span>
+          <p-button icon="pi pi-times" [text]="true" severity="secondary" ariaLabel="Cerrar" (onClick)="seleccionada = null"></p-button>
+        </div>
+        <div class="resumen">
+          <div class="dato"><strong>{{ seleccionada.cantidadAves }}</strong><span>aves</span></div>
+          <div class="dato"><strong>{{ seleccionada.pesoTotalLibras | number:'1.0-2' }} lb</strong><span>{{ seleccionada.pesoTotalLibras / seleccionada.cantidadAves | number:'1.0-2' }} lb por ave</span></div>
+          <div class="dato"><strong>{{ seleccionada.precioLibra | currency:'COP':'$':'1.0-0' }}</strong><span>por libra</span></div>
+          <div class="dato"><strong>{{ seleccionada.valorTotal | currency:'COP':'$':'1.0-0' }}</strong><span>valor total</span></div>
+          <div class="dato"><strong [class.negativo]="seleccionada.vencida">{{ seleccionada.saldo | currency:'COP':'$':'1.0-0' }}</strong><span>saldo · límite {{ seleccionada.fechaLimitePago | date:'dd/MM/yyyy' }}</span></div>
+        </div>
+
+        <div class="balance-grid">
+          <div>
+            <h3 class="subtitulo">Pagos</h3>
+            <p class="ayuda" *ngIf="!pagos.length">Sin pagos registrados.</p>
+            <table class="data-table" *ngIf="pagos.length">
+              <tbody>
+                <tr *ngFor="let p of pagos">
+                  <td>{{ p.fecha | date:'dd/MM/yyyy' }}</td><td>{{ p.metodo }}</td>
+                  <td class="num">{{ p.monto | currency:'COP':'$':'1.0-0' }}</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <ng-container *ngIf="puedePagar && seleccionada.saldo > 0">
+              <form class="form-pago" [formGroup]="formPago" (ngSubmit)="registrarPago()" novalidate>
+                <select pInputText formControlName="codigoMetodo" aria-label="Método">
+                  <option value="EFECTIVO">Efectivo</option>
+                  <option value="TRANSFERENCIA">Transferencia</option>
+                  <option value="CREDITO">Crédito</option>
+                </select>
+                <input pInputText type="date" formControlName="fecha" [max]="hoy" aria-label="Fecha" />
+                <input pInputText type="number" step="100" min="1" formControlName="monto" aria-label="Monto" />
+                <p-button type="submit" label="Registrar pago" icon="pi pi-check" [loading]="guardando"></p-button>
+              </form>
+              <div class="pago-linea">
+                <div class="pago-linea-texto">
+                  <strong>Pago en línea</strong>
+                  <p class="ayuda">El cliente paga en la página segura de Wompi (ambiente de pruebas). Los datos de la tarjeta no pasan por este sistema.</p>
+                </div>
+                <input pInputText type="number" step="100" min="1" [(ngModel)]="montoEnLinea" aria-label="Monto en línea" />
+                <p-button label="Pagar en línea" icon="pi pi-credit-card" severity="warn" [loading]="redirigiendo" (onClick)="pagarEnLinea()"></p-button>
+              </div>
+            </ng-container>
+          </div>
+
+          <div>
+            <h3 class="subtitulo">Entrega</h3>
+            <ng-container *ngIf="entregaSeleccionada as e; else sinEntrega">
+              <dl class="ficha">
+                <dt>Transportista</dt><dd>{{ e.transportista }}</dd>
+                <dt>Dirección</dt><dd>{{ e.direccion }}</dd>
+                <dt>Estado</dt><dd><span class="chip" [class.verde]="e.estado === 'ENTREGADO'" [class.rojo]="e.estado === 'DEVUELTO'">{{ e.estado | titlecase }}</span></dd>
+                <dt *ngIf="e.fechaEntrega">Fecha</dt><dd *ngIf="e.fechaEntrega">{{ e.fechaEntrega | date:'dd/MM/yyyy' }}</dd>
+              </dl>
+              <div class="form-actions" *ngIf="puedeGestionar && e.estado === 'PENDIENTE'">
+                <p-button label="Devuelta" severity="secondary" [outlined]="true" (onClick)="cerrarEntrega(e, 'DEVUELTO')"></p-button>
+                <p-button label="Entregada hoy" icon="pi pi-check" (onClick)="cerrarEntrega(e, 'ENTREGADO')"></p-button>
+              </div>
+            </ng-container>
+            <ng-template #sinEntrega>
+              <form *ngIf="puedeGestionar; else sinPermisoEntrega" [formGroup]="formEntrega" (ngSubmit)="programarEntrega()" novalidate>
+                <div class="field">
+                  <label for="e-trans">Transportista *</label>
+                  <select id="e-trans" pInputText formControlName="idEmpleado">
+                    <option [ngValue]="null" disabled>Selecciona un transportista</option>
+                    <option *ngFor="let t of transportistas" [ngValue]="t.idEmpleado">{{ t.nombres }} {{ t.apellidos }}</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="e-dir">Dirección</label>
+                  <input id="e-dir" pInputText formControlName="direccion" maxlength="200" placeholder="Vacía: la del cliente" />
+                </div>
+                <div class="form-actions">
+                  <p-button type="submit" label="Programar entrega" icon="pi pi-truck" [loading]="guardando"></p-button>
+                </div>
+              </form>
+              <ng-template #sinPermisoEntrega><p class="ayuda">Sin entrega programada.</p></ng-template>
+            </ng-template>
+          </div>
+        </div>
+      </section>
+
+      <div *ngIf="loading" class="loading">Buscando información...</div>
+      <div *ngIf="!loading && errorMsg" class="error">{{ errorMsg }}</div>
+
+      <ng-container *ngIf="!loading && !errorMsg">
+        <ng-container *ngIf="pestana === 'ventas'">
+          <div class="table-wrapper" *ngIf="ventas.length">
+            <table class="data-table">
+              <thead><tr><th>N.º</th><th>Fecha</th><th>Cliente</th><th class="num">Aves</th><th class="num">Libras</th><th class="num">Valor</th><th class="num">Saldo</th><th>Estado</th><th>Entrega</th><th></th></tr></thead>
+              <tbody>
+                <tr *ngFor="let v of ventas" [class.activa]="seleccionada?.idVenta === v.idVenta">
+                  <td>{{ v.idVenta }}</td><td>{{ v.fechaVenta | date:'dd/MM/yyyy' }}</td><td><strong>{{ v.cliente }}</strong></td>
+                  <td class="num">{{ v.cantidadAves }}</td><td class="num">{{ v.pesoTotalLibras | number:'1.0-0' }}</td>
+                  <td class="num">{{ v.valorTotal | currency:'COP':'$':'1.0-0' }}</td>
+                  <td class="num">{{ v.saldo | currency:'COP':'$':'1.0-0' }}</td>
+                  <td><span class="chip" [ngClass]="claseVenta(v)">{{ estadosVenta[v.estado] }}</span></td>
+                  <td>{{ v.estadoEntrega ? (v.estadoEntrega | titlecase) : '-' }}</td>
+                  <td class="acciones"><p-button icon="pi pi-eye" [text]="true" ariaLabel="Ver venta" (onClick)="seleccionar(v)"></p-button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="no-data" *ngIf="!ventas.length">No hay ventas registradas. Se registran desde un pedido confirmado.</div>
+        </ng-container>
+
+        <ng-container *ngIf="pestana === 'entregas'">
+          <div class="table-wrapper" *ngIf="entregas.length">
+            <table class="data-table">
+              <thead><tr><th>Venta</th><th>Cliente</th><th>Transportista</th><th>Dirección</th><th>Fecha</th><th>Estado</th><th *ngIf="puedeGestionar"></th></tr></thead>
+              <tbody>
+                <tr *ngFor="let e of entregas">
+                  <td>{{ e.idVenta }}</td><td>{{ e.cliente }}</td><td>{{ e.transportista }}</td><td>{{ e.direccion }}</td>
+                  <td>{{ e.fechaEntrega ? (e.fechaEntrega | date:'dd/MM/yyyy') : '-' }}</td>
+                  <td><span class="chip" [class.verde]="e.estado === 'ENTREGADO'" [class.rojo]="e.estado === 'DEVUELTO'">{{ e.estado | titlecase }}</span></td>
+                  <td class="acciones" *ngIf="puedeGestionar">
+                    <p-button *ngIf="e.estado === 'PENDIENTE'" label="Entregada" size="small" [text]="true" (onClick)="cerrarEntrega(e, 'ENTREGADO')"></p-button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="no-data" *ngIf="!entregas.length">No hay entregas programadas.</div>
+        </ng-container>
+
+        <ng-container *ngIf="pestana === 'cartera'">
+          <div class="toolbar">
+            <p class="ayuda">La cartera vencida se marca automáticamente cada día. Puedes actualizarla ahora.</p>
+            <span class="spacer"></span>
+            <p-button label="Marcar vencidas ahora" icon="pi pi-refresh" severity="secondary" [outlined]="true" (onClick)="marcarVencidas()"></p-button>
+          </div>
+          <div class="table-wrapper" *ngIf="cartera.length">
+            <table class="data-table">
+              <thead><tr><th>Venta</th><th>Cliente</th><th>Fecha límite</th><th class="num">Días de mora</th><th class="num">Valor</th><th class="num">Saldo</th></tr></thead>
+              <tbody>
+                <tr *ngFor="let c of cartera">
+                  <td>{{ c.idVenta }}</td><td><strong>{{ c.cliente }}</strong></td><td>{{ c.fechaLimitePago | date:'dd/MM/yyyy' }}</td>
+                  <td class="num"><span class="chip rojo">{{ c.diasVencida }}</span></td>
+                  <td class="num">{{ c.valorTotal | currency:'COP':'$':'1.0-0' }}</td>
+                  <td class="num negativo">{{ c.saldo | currency:'COP':'$':'1.0-0' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="no-data" *ngIf="!cartera.length">No hay cartera vencida.</div>
+        </ng-container>
+
+        <ng-container *ngIf="pestana === 'clientes'">
+          <div class="table-wrapper" *ngIf="porCliente.length">
+            <table class="data-table">
+              <thead><tr><th>Cliente</th><th>Tipo</th><th class="num">Ventas</th><th class="num">Vendido</th><th class="num">Saldo pendiente</th></tr></thead>
+              <tbody>
+                <tr *ngFor="let c of porCliente">
+                  <td><strong>{{ c.cliente }}</strong></td><td>{{ c.tipoCliente }}</td><td class="num">{{ c.ventas }}</td>
+                  <td class="num">{{ c.valorVendido | currency:'COP':'$':'1.0-0' }}</td>
+                  <td class="num">{{ c.saldoPendiente | currency:'COP':'$':'1.0-0' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </ng-container>
+      </ng-container>
+    </main>
+  </div>
+</div>

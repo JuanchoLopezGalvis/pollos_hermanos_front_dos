@@ -1,0 +1,134 @@
+.spacer {
+  flex: 1;
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: var(--ph-texto-suave);
+  cursor: pointer;
+}
+
+.ayuda {
+  color: var(--ph-texto-suave);
+  font-size: 0.8rem;
+}
+
+.detalle-encabezado {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.detalle-encabezado > div {
+  flex: 1;
+}
+
+.detalle-encabezado h2 {
+  margin-bottom: 4px;
+}
+
+.sub {
+  color: var(--ph-texto-suave);
+  font-size: 0.92rem;
+}
+
+.chip.grande {
+  font-size: 0.85rem;
+  padding: 5px 14px;
+}
+
+.chip.gris {
+  background: var(--ph-linea);
+  color: var(--ph-texto-suave);
+}
+
+.cifras {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.dato {
+  background: var(--ph-fondo);
+  border-radius: 16px;
+  padding: 14px 18px;
+}
+
+.dato strong {
+  display: block;
+  font-family: var(--ph-display);
+  font-size: 1.35rem;
+  color: var(--ph-verde-900);
+}
+
+.dato span {
+  font-size: 0.82rem;
+  color: var(--ph-texto-suave);
+}
+
+.dato.alerta {
+  background: var(--ph-tomate-suave);
+}
+
+.dato.alerta strong {
+  color: var(--ph-tomate);
+}
+
+.aviso {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  margin-bottom: 18px;
+  border-radius: 14px;
+  background: var(--ph-tomate-suave);
+  color: #9a2e12;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.acciones-lote {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.subtitulo {
+  margin: 26px 0 12px;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.form-mortalidad {
+  display: grid;
+  grid-template-columns: 170px 140px 1fr auto;
+  gap: 12px;
+  align-items: end;
+  margin-bottom: 16px;
+}
+
+.vacio {
+  color: var(--ph-texto-suave);
+  font-size: 0.9rem;
+  padding: 8px 0;
+}
+
+.data-table tbody tr.activa {
+  background: var(--ph-yema-suave);
+}
+
+@media (max-width: 720px) {
+  .form-mortalidad {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .form-mortalidad .causa {
+    grid-column: 1 / -1;
+  }
+}

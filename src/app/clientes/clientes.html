@@ -1,0 +1,81 @@
+<div class="body-wrapper">
+  <div class="glass-container">
+    <app-sidebar></app-sidebar>
+
+    <main class="content">
+      <header>
+        <h1>Clientes</h1>
+        <p>Tiendas, restaurantes y personas naturales. Cada cliente tiene teléfono o correo de contacto único.</p>
+      </header>
+
+      <div class="toolbar">
+        <div class="field">
+          <label for="buscar">Buscar</label>
+          <input id="buscar" pInputText [(ngModel)]="busqueda" placeholder="Nombre o documento" />
+        </div>
+        <span class="spacer"></span>
+        <p-button *ngIf="puedeGestionar && !mostrarFormulario" label="Nuevo cliente" icon="pi pi-plus" severity="warn" (onClick)="nuevo()"></p-button>
+      </div>
+
+      <section class="card animate__animated animate__fadeIn" *ngIf="mostrarFormulario">
+        <h2>{{ editando ? 'Editar cliente' : 'Nuevo cliente' }}</h2>
+        <form [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+          <div class="form-grid">
+            <div class="field">
+              <label for="tipo">Tipo *</label>
+              <select id="tipo" pInputText formControlName="idTipoCliente">
+                <option [ngValue]="null" disabled>Selecciona un tipo</option>
+                <option *ngFor="let t of tipos" [ngValue]="t.id">{{ t.nombre }}</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="documento">Documento o NIT *</label>
+              <input id="documento" pInputText formControlName="documento" maxlength="20" />
+            </div>
+            <div class="field">
+              <label for="nombre">Nombre *</label>
+              <input id="nombre" pInputText formControlName="nombre" maxlength="120" />
+            </div>
+            <div class="field">
+              <label for="telefono">Teléfono</label>
+              <input id="telefono" pInputText formControlName="telefono" maxlength="20" />
+            </div>
+            <div class="field">
+              <label for="correo">Correo</label>
+              <input id="correo" pInputText formControlName="correo" maxlength="120" />
+              <small class="err" *ngIf="f['correo'].invalid && f['correo'].touched">No es un correo válido.</small>
+            </div>
+            <div class="field">
+              <label for="direccion">Dirección de entrega</label>
+              <input id="direccion" pInputText formControlName="direccion" maxlength="200" />
+            </div>
+          </div>
+          <small class="err" *ngIf="form.errors?.['sinContacto'] && form.touched">Escribe un teléfono o un correo.</small>
+          <label class="check-inline" *ngIf="editando"><input type="checkbox" formControlName="activo" /> Activo</label>
+          <div class="form-actions">
+            <p-button type="button" label="Cancelar" severity="secondary" [outlined]="true" (onClick)="cancelar()"></p-button>
+            <p-button type="submit" [label]="editando ? 'Guardar cambios' : 'Registrar'" icon="pi pi-check" [loading]="guardando"></p-button>
+          </div>
+        </form>
+      </section>
+
+      <div *ngIf="loading" class="loading">Buscando información...</div>
+      <div *ngIf="!loading && errorMsg" class="error">{{ errorMsg }}</div>
+
+      <div class="table-wrapper" *ngIf="!loading && !errorMsg && visibles.length">
+        <table class="data-table">
+          <thead><tr><th>Documento</th><th>Nombre</th><th>Tipo</th><th>Contacto</th><th>Dirección</th><th>Estado</th><th *ngIf="puedeGestionar"></th></tr></thead>
+          <tbody>
+            <tr *ngFor="let c of visibles">
+              <td>{{ c.documento }}</td><td><strong>{{ c.nombre }}</strong></td><td>{{ c.tipoCliente }}</td>
+              <td>{{ c.telefono || c.correo }}</td><td>{{ c.direccion || '-' }}</td>
+              <td><span class="chip" [class.gris]="!c.activo">{{ c.activo ? 'Activo' : 'Inactivo' }}</span></td>
+              <td class="acciones" *ngIf="puedeGestionar"><p-button icon="pi pi-pencil" [text]="true" ariaLabel="Editar" (onClick)="editar(c)"></p-button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div *ngIf="!loading && !errorMsg && !visibles.length" class="no-data">No hay clientes registrados.</div>
+    </main>
+  </div>
+</div>

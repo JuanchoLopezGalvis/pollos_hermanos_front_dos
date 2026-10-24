@@ -1,0 +1,225 @@
+<div class="body-wrapper">
+  <div class="glass-container">
+    <app-sidebar></app-sidebar>
+
+    <main class="content">
+      <header>
+        <h1>Lotes</h1>
+        <p>Cada lote se sigue por separado aunque comparta galpón. El engorde dura de 35 a 45 días y la mortalidad de referencia es del 5 %.</p>
+      </header>
+
+      <div class="toolbar">
+        <label class="check">
+          <input type="checkbox" [(ngModel)]="verInactivos" />
+          Ver también vendidos y cerrados
+        </label>
+        <span class="spacer"></span>
+        <p-button *ngIf="puedeGestionar && modoFormulario !== 'nuevo'" label="Nuevo lote" icon="pi pi-plus"
+                  severity="warn" (onClick)="nuevo()"></p-button>
+      </div>
+
+      <!-- Formulario de lote -->
+      <section class="card animate__animated animate__fadeIn" *ngIf="modoFormulario">
+        <h2>{{ modoFormulario === 'editar' ? 'Corregir lote ' + seleccionado?.codigo : 'Registrar lote' }}</h2>
+        <form [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+          <div class="form-grid">
+            <div class="field">
+              <label for="codigo">Código *</label>
+              <input id="codigo" pInputText formControlName="codigo" maxlength="20" placeholder="Ej. L-2026-01" />
+              <small class="err" *ngIf="f['codigo'].invalid && f['codigo'].touched">Letras, números y guiones; máximo 20.</small>
+            </div>
+            <div class="field">
+              <label for="galpon">Galpón *</label>
+              <select id="galpon" pInputText formControlName="idGalpon">
+                <option [ngValue]="null" disabled>Selecciona un galpón</option>
+                <ng-container *ngIf="modoFormulario === 'nuevo'; else galponActual">
+                  <option *ngFor="let g of galponesDisponibles" [ngValue]="g.idGalpon">
+                    {{ g.nombre }} · {{ g.lotesActivos }} lotes · libre {{ g.capacidadLibre | number }} aves
+                  </option>
+                </ng-container>
+                <ng-template #galponActual>
+                  <option [ngValue]="seleccionado?.idGalpon">{{ seleccionado?.galpon }}</option>
+                </ng-template>
+              </select>
+              <small class="err" *ngIf="f['idGalpon'].invalid && f['idGalpon'].touched">Selecciona un galpón.</small>
+              <small class="ayuda" *ngIf="modoFormulario === 'nuevo' && !galponesDisponibles.length">
+                No hay galpones con espacio: todos están llenos o en mantenimiento.
+              </small>
+              <small class="ayuda" *ngIf="modoFormulario === 'nuevo' && capacidadLibreElegida !== null">
+                Caben {{ capacidadLibreElegida | number }} aves más en este galpón.
+              </small>
+            </div>
+            <div class="field">
+              <label for="ingreso">Fecha de ingreso *</label>
+              <input id="ingreso" pInputText type="date" formControlName="fechaIngreso" [max]="hoy" />
+            </div>
+            <div class="field">
+              <label for="cantidad">Aves iniciales *</label>
+              <input id="cantidad" pInputText type="number" step="1" min="1" formControlName="cantidadInicial" />
+              <small class="err" *ngIf="f['cantidadInicial'].invalid && f['cantidadInicial'].touched">Entero mayor que cero.</small>
+            </div>
+            <div class="field">
+              <label for="costo">Costo por pollito (COP) *</label>
+              <input id="costo" pInputText type="number" step="1" min="0" formControlName="costoPollito" />
+              <small class="err" *ngIf="f['costoPollito'].invalid && f['costoPollito'].touched">No puede ser negativo.</small>
+            </div>
+            <div class="field">
+              <label for="estimada">Fecha estimada de venta</label>
+              <input id="estimada" pInputText type="date" formControlName="fechaEstimadaVenta" />
+              <small class="ayuda">Entre 35 y 45 días después del ingreso. Vacía: ingreso + 40 días.</small>
+            </div>
+          </div>
+          <div class="form-actions">
+            <p-button type="button" label="Cancelar" severity="secondary" [outlined]="true" (onClick)="cancelar()"></p-button>
+            <p-button type="submit" [label]="modoFormulario === 'editar' ? 'Guardar cambios' : 'Registrar lote'"
+                      icon="pi pi-check" [loading]="guardando"></p-button>
+          </div>
+        </form>
+      </section>
+
+      <!-- Detalle del lote seleccionado -->
+      <section class="card detalle animate__animated animate__fadeIn" *ngIf="seleccionado && modoFormulario !== 'nuevo'">
+        <div class="detalle-encabezado">
+          <div>
+            <h2>Lote {{ seleccionado.codigo }}</h2>
+            <p class="sub">
+              {{ seleccionado.galpon }} · ingresó el {{ seleccionado.fechaIngreso | date:'dd/MM/yyyy' }}
+              <ng-container *ngIf="esActivo(seleccionado)"> · día {{ seleccionado.edadDias }}</ng-container>
+            </p>
+          </div>
+          <span class="chip grande" [ngClass]="claseEstado(seleccionado)">{{ estados[seleccionado.estado] }}</span>
+          <p-button icon="pi pi-times" [text]="true" severity="secondary" ariaLabel="Cerrar detalle" (onClick)="cerrarDetalle()"></p-button>
+        </div>
+
+        <div class="cifras">
+          <div class="dato"><strong>{{ seleccionado.cantidadInicial | number }}</strong><span>aves iniciales</span></div>
+          <div class="dato"><strong>{{ seleccionado.avesDisponibles | number }}</strong><span>pollos vivos</span></div>
+          <div class="dato"><strong>{{ seleccionado.avesVendidas | number }}</strong><span>vendidos</span></div>
+          <div class="dato"><strong>{{ seleccionado.consumoAlimentoBultos | number:'1.0-1' }}</strong><span>bultos de alimento ({{ seleccionado.consumoAlimentoKg | number:'1.0-0' }} kg)</span></div>
+          <div class="dato" [class.alerta]="seleccionado.alertaMortalidad">
+            <strong>{{ seleccionado.porcentajeMortalidad | number:'1.2-2' }} %</strong>
+            <span>mortalidad ({{ seleccionado.mortalidadAcumulada | number }} aves)</span>
+          </div>
+          <div class="dato"><strong>{{ seleccionado.costoPollitos | currency:'COP':'$':'1.0-0' }}</strong><span>costo de pollitos</span></div>
+          <div class="dato"><strong>{{ seleccionado.fechaEstimadaVenta | date:'dd/MM/yyyy' }}</strong><span>venta estimada</span></div>
+        </div>
+
+        <div class="aviso" *ngIf="seleccionado.alertaMortalidad">
+          <i class="pi pi-exclamation-triangle" aria-hidden="true"></i>
+          La mortalidad acumulada supera el 5 % de referencia. Revisa las condiciones del galpón.
+        </div>
+
+        <div class="acciones-lote" *ngIf="puedeGestionar">
+          <p-button *ngIf="esActivo(seleccionado)" label="Corregir datos" icon="pi pi-pencil" severity="secondary"
+                    [outlined]="true" (onClick)="editar(seleccionado)"></p-button>
+          <p-button *ngFor="let e of siguientesEstados" [label]="'Pasar a ' + estados[e]" icon="pi pi-arrow-right"
+                    severity="secondary" [outlined]="true" (onClick)="cambiarEstado(e)"></p-button>
+        </div>
+
+        <ng-container *ngIf="consumosLote.length || aplicacionesLote.length">
+          <h3 class="subtitulo">Alimento y vitaminas</h3>
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead><tr><th>Fecha</th><th>Día</th><th>Registro</th><th class="num">Cantidad</th><th class="num">Costo</th></tr></thead>
+              <tbody>
+                <tr *ngFor="let a of aplicacionesLote">
+                  <td>{{ a.fecha | date:'dd/MM/yyyy' }}</td>
+                  <td>{{ edadEn(a.fecha) }}</td>
+                  <td><span class="chip verde">Sanidad</span> {{ a.producto }} <span class="ayuda">· {{ a.responsable }}{{ a.observaciones ? ' · ' + a.observaciones : '' }}</span></td>
+                  <td class="num">{{ a.dosis | number:'1.0-2' }} {{ a.unidadMedida }}</td>
+                  <td class="num">{{ a.costoTotal | currency:'COP':'$':'1.0-0' }}</td>
+                </tr>
+                <tr *ngFor="let c of consumosLote">
+                  <td>{{ c.fecha | date:'dd/MM/yyyy' }}</td>
+                  <td>{{ c.edadDias }}</td>
+                  <td><span class="chip">Alimento</span> {{ c.tipoAlimento }}</td>
+                  <td class="num">{{ c.cantidadBultos | number:'1.0-2' }} bultos</td>
+                  <td class="num">{{ c.costoTotal | currency:'COP':'$':'1.0-0' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </ng-container>
+
+        <h3 class="subtitulo">Mortalidad diaria</h3>
+        <form *ngIf="puedeRegistrarMortalidad && esActivo(seleccionado)" class="form-mortalidad"
+              [formGroup]="formMortalidad" (ngSubmit)="registrarMortalidad()" novalidate>
+          <div class="field">
+            <label for="fm-fecha">Fecha</label>
+            <input id="fm-fecha" pInputText type="date" formControlName="fecha" [min]="seleccionado.fechaIngreso" [max]="hoy" />
+          </div>
+          <div class="field">
+            <label for="fm-cantidad">Aves muertas *</label>
+            <input id="fm-cantidad" pInputText type="number" step="1" min="1" formControlName="cantidad" />
+            <small class="err" *ngIf="fm['cantidad'].invalid && fm['cantidad'].touched">Entero mayor que cero.</small>
+          </div>
+          <div class="field causa">
+            <label for="fm-causa">Causa</label>
+            <input id="fm-causa" pInputText formControlName="causa" maxlength="200" placeholder="Opcional" />
+          </div>
+          <p-button type="submit" label="Registrar" icon="pi pi-plus" [loading]="registrandoMortalidad"></p-button>
+        </form>
+
+        <div *ngIf="cargandoMortalidad" class="vacio">Cargando...</div>
+        <p *ngIf="!cargandoMortalidad && !mortalidad.length" class="vacio">Sin mortalidad registrada.</p>
+        <div class="table-wrapper" *ngIf="!cargandoMortalidad && mortalidad.length">
+          <table class="data-table">
+            <thead>
+              <tr><th>Fecha</th><th>Aves</th><th>Causa</th></tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let m of mortalidad">
+                <td>{{ m.fecha | date:'dd/MM/yyyy' }}</td>
+                <td>{{ m.cantidad | number }}</td>
+                <td>{{ m.causa || '-' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Tabla de lotes -->
+      <div *ngIf="loading" class="loading">Buscando información...</div>
+      <div *ngIf="!loading && errorMsg" class="error">{{ errorMsg }}</div>
+
+      <div class="table-wrapper" *ngIf="!loading && !errorMsg && visibles.length">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Galpón</th>
+              <th>Ingreso</th>
+              <th>Día</th>
+              <th>Vivos / iniciales</th>
+              <th>Mortalidad</th>
+              <th>Estado</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let l of visibles; trackBy: trackById" [class.activa]="seleccionado?.id === l.id">
+              <td><strong>{{ l.codigo }}</strong></td>
+              <td>{{ l.galpon }}</td>
+              <td>{{ l.fechaIngreso | date:'dd/MM/yyyy' }}</td>
+              <td>{{ esActivo(l) ? l.edadDias : '-' }}</td>
+              <td>{{ l.avesDisponibles | number }} / {{ l.cantidadInicial | number }}</td>
+              <td>
+                <span class="chip" [ngClass]="l.alertaMortalidad ? 'rojo' : 'verde'">
+                  {{ l.porcentajeMortalidad | number:'1.2-2' }} %
+                </span>
+              </td>
+              <td><span class="chip" [ngClass]="claseEstado(l)">{{ estados[l.estado] }}</span></td>
+              <td class="acciones">
+                <p-button icon="pi pi-eye" [text]="true" ariaLabel="Ver detalle" (onClick)="seleccionar(l)"></p-button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div *ngIf="!loading && !errorMsg && !visibles.length" class="no-data">
+        {{ lotes.length ? 'No hay lotes activos.' : 'No hay lotes registrados.' }}
+      </div>
+    </main>
+  </div>
+</div>

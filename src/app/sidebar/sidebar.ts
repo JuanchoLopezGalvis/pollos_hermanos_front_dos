@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
+import { SECCIONES, SeccionApp, ModuloApp } from '../navegacion';
 
 /** Barra lateral de las pantallas internas, con los enlaces que el usuario puede usar. */
 @Component({
@@ -11,7 +12,14 @@ import { AuthService } from '../services/auth.service';
 })
 export class Sidebar {
 
+  readonly secciones = SECCIONES;
+
   constructor(public auth: AuthService, private router: Router) {}
+
+  /** Módulos de la sección que el usuario puede abrir. */
+  visibles(seccion: SeccionApp): ModuloApp[] {
+    return seccion.modulos.filter(m => this.auth.tieneAlguno(m.permisos));
+  }
 
   get iniciales(): string {
     return this.auth.nombreVisible

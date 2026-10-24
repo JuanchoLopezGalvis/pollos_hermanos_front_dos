@@ -9,6 +9,7 @@ import { of, throwError } from 'rxjs';
 import { Seguimiento } from './seguimiento';
 import { SeguimientoService } from '../services/seguimiento.service';
 import { AuthService } from '../services/auth.service';
+import { LoteService } from '../services/lote.service';
 
 describe('Seguimiento', () => {
   let component: Seguimiento;
@@ -36,6 +37,7 @@ describe('Seguimiento', () => {
       providers: [
         { provide: SeguimientoService, useValue: svc },
         { provide: AuthService, useValue: auth },
+        { provide: LoteService, useValue: { obtenerTodos: () => of([]) } },
         { provide: MessageService, useValue: messages },
         { provide: ConfirmationService, useValue: jasmine.createSpyObj('ConfirmationService', ['confirm']) }
       ],

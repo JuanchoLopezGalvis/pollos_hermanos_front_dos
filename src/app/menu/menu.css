@@ -183,39 +183,6 @@
 
 /* ---------- Próximamente ---------- */
 
-.grid-proximos {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 12px;
-}
-
-.proximo {
-  display: flex;
-  gap: 16px;
-  align-items: flex-start;
-  padding: 18px 20px;
-  border-radius: 18px;
-  border: 1.5px dashed var(--ph-borde);
-}
-
-.proximo i {
-  margin-top: 3px;
-  color: var(--ph-verde-500);
-  font-size: 1.1rem;
-}
-
-.proximo h3 {
-  font-family: var(--ph-cuerpo);
-  font-size: 1rem;
-  font-weight: 700;
-  letter-spacing: 0;
-}
-
-.proximo p {
-  font-size: 0.88rem;
-  color: var(--ph-texto-suave);
-}
-
 .pie {
   display: flex;
   flex-wrap: wrap;

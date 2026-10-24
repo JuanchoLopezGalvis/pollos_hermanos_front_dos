@@ -35,11 +35,10 @@ describe('Menu', () => {
   it('habilita solo los módulos permitidos', () => {
     const seguimiento = component.modulos.find(m => m.ruta === '/seguimiento')!;
     const usuarios = component.modulos.find(m => m.ruta === '/usuarios')!;
-    const lotes = component.modulos.find(m => !m.ruta)!;
 
     expect(component.disponible(seguimiento)).toBeTrue();
     expect(component.estado(usuarios)).toBe('Sin permiso');
-    expect(component.estado(lotes)).toBe('Próximamente');
+    expect(component.modulos.every(m => !!m.ruta)).toBeTrue();
   });
 
   it('cierra la sesión y vuelve al login', () => {

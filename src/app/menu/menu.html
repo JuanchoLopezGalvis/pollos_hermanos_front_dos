@@ -6,13 +6,13 @@
       <header class="saludo animate__animated animate__fadeIn">
         <span class="eyebrow">Panel general</span>
         <h1>Hola, {{ auth.nombreVisible }}</h1>
-        <p>Elige un módulo para empezar. Los que aún no están listos aparecen como próximos.</p>
+        <p>Elige un módulo para empezar. Cada lote se sigue por separado, desde su ingreso hasta su venta.</p>
       </header>
 
       <section class="ciclo" aria-label="Ciclo de engorde">
         <div class="ciclo-texto">
           <h2>Ciclo de engorde</h2>
-          <p>Cada lote vive entre 40 y 50 días. La alimentación cambia según la edad y la mortalidad de referencia es del 5 %.</p>
+          <p>Cada lote se engorda entre 35 y 45 días y entra uno nuevo cada semana. La alimentación cambia según la edad y la mortalidad de referencia es del 5 %.</p>
         </div>
         <ol>
           <li><span class="punto p1"></span><strong>Preiniciación</strong><small>Días 1 a 7</small></li>
@@ -22,14 +22,14 @@
         </ol>
       </section>
 
-      <section class="bloque">
-        <h2>Módulos</h2>
+      <section class="bloque" *ngFor="let s of secciones">
+        <h2>{{ s.titulo }}</h2>
         <div class="grid-modulos">
           <button
             type="button"
-            *ngFor="let m of conPantalla; let i = index"
+            *ngFor="let m of s.modulos; let i = index"
             class="modulo"
-            [class.destacado]="i === 0 && disponible(m)"
+            [class.destacado]="i === 0 && s === secciones[0] && disponible(m)"
             [disabled]="!disponible(m)"
             (click)="abrir(m)">
             <span class="icono"><i [class]="m.icono" aria-hidden="true"></i></span>
@@ -40,19 +40,6 @@
               <i class="pi pi-arrow-right" aria-hidden="true" *ngIf="disponible(m)"></i>
             </span>
           </button>
-        </div>
-      </section>
-
-      <section class="bloque">
-        <h2>Próximamente</h2>
-        <div class="grid-proximos">
-          <div class="proximo" *ngFor="let m of proximos">
-            <i [class]="m.icono" aria-hidden="true"></i>
-            <div>
-              <h3>{{ m.titulo }}</h3>
-              <p>{{ m.descripcion }}</p>
-            </div>
-          </div>
         </div>
       </section>
 

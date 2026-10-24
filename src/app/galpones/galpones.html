@@ -1,0 +1,94 @@
+<div class="body-wrapper">
+  <div class="glass-container">
+    <app-sidebar></app-sidebar>
+
+    <main class="content">
+      <header>
+        <h1>Galpones</h1>
+        <p>Cada galpón aloja varios lotes de distintas edades (uno nuevo cada semana). La suma de aves vivas de sus lotes activos no puede superar su capacidad.</p>
+      </header>
+
+      <div class="resumen" *ngIf="galpones.length">
+        <div class="dato"><strong>{{ galpones.length }}</strong><span>galpones</span></div>
+        <div class="dato"><strong>{{ contar('OCUPADO') }}</strong><span>ocupados</span></div>
+        <div class="dato"><strong>{{ contar('DISPONIBLE') }}</strong><span>disponibles</span></div>
+        <div class="dato"><strong>{{ avesAlojadas | number }} / {{ capacidadTotal | number }}</strong><span>aves alojadas / capacidad</span></div>
+      </div>
+
+      <div class="toolbar">
+        <span class="spacer"></span>
+        <p-button *ngIf="puedeGestionar && !mostrarFormulario" label="Nuevo galpón" icon="pi pi-plus"
+                  severity="warn" (onClick)="nuevo()"></p-button>
+      </div>
+
+      <section class="card animate__animated animate__fadeIn" *ngIf="mostrarFormulario">
+        <h2>{{ editando ? 'Editar galpón' : 'Nuevo galpón' }}</h2>
+        <form [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+          <div class="form-grid">
+            <div class="field">
+              <label for="nombre">Nombre *</label>
+              <input id="nombre" pInputText formControlName="nombre" maxlength="60" />
+              <small class="err" *ngIf="f['nombre'].invalid && f['nombre'].touched">El nombre es obligatorio.</small>
+            </div>
+            <div class="field">
+              <label for="capacidad">Capacidad máxima (aves) *</label>
+              <input id="capacidad" pInputText type="number" step="1" min="1" formControlName="capacidadMaxima" />
+              <small class="err" *ngIf="f['capacidadMaxima'].invalid && f['capacidadMaxima'].touched">
+                Debe ser un número entero mayor que cero.
+              </small>
+            </div>
+            <div class="field">
+              <label for="estado">Estado</label>
+              <select id="estado" pInputText formControlName="estado">
+                <option value="DISPONIBLE">Disponible</option>
+                <option value="MANTENIMIENTO">En mantenimiento</option>
+                <option value="OCUPADO" disabled>Ocupado (lo asigna el sistema)</option>
+              </select>
+              <small class="ayuda" *ngIf="f['estado'].disabled">Queda disponible cuando salga su último lote activo.</small>
+            </div>
+          </div>
+          <div class="form-actions">
+            <p-button type="button" label="Cancelar" severity="secondary" [outlined]="true" (onClick)="cancelar()"></p-button>
+            <p-button type="submit" [label]="editando ? 'Guardar cambios' : 'Crear galpón'" icon="pi pi-check"
+                      [loading]="guardando"></p-button>
+          </div>
+        </form>
+      </section>
+
+      <div *ngIf="loading" class="loading">Buscando información...</div>
+      <div *ngIf="!loading && errorMsg" class="error">{{ errorMsg }}</div>
+
+      <div class="table-wrapper" *ngIf="!loading && !errorMsg && galpones.length">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Capacidad (aves)</th>
+              <th>Lotes activos</th>
+              <th>Aves alojadas</th>
+              <th>Espacio libre</th>
+              <th>Estado</th>
+              <th *ngIf="puedeGestionar"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let g of galpones">
+              <td>{{ g.nombre }}</td>
+              <td>{{ g.capacidadMaxima | number }}</td>
+              <td>{{ ocupacion[g.id!]?.lotesActivos ?? 0 }}</td>
+              <td>{{ (ocupacion[g.id!]?.avesAlojadas ?? 0) | number }}</td>
+              <td>{{ (ocupacion[g.id!]?.capacidadLibre ?? g.capacidadMaxima) | number }}</td>
+              <td><span class="chip" [ngClass]="claseEstado(g)">{{ estados[g.estado ?? 'DISPONIBLE'] }}</span></td>
+              <td class="acciones" *ngIf="puedeGestionar">
+                <p-button icon="pi pi-pencil" [text]="true" ariaLabel="Editar" (onClick)="editar(g)"></p-button>
+                <p-button icon="pi pi-trash" severity="danger" [text]="true" ariaLabel="Eliminar" (onClick)="eliminar(g)"></p-button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div *ngIf="!loading && !errorMsg && !galpones.length" class="no-data">No hay galpones registrados.</div>
+    </main>
+  </div>
+</div>

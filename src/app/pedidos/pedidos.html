@@ -1,0 +1,134 @@
+<div class="body-wrapper">
+  <div class="glass-container">
+    <app-sidebar></app-sidebar>
+
+    <main class="content">
+      <header>
+        <h1>Pedidos</h1>
+        <p>Un pedido puede tomar aves de varios lotes listos para venta. Al confirmarlo, las aves quedan apartadas para ese cliente.</p>
+      </header>
+
+      <div class="toolbar">
+        <div class="field">
+          <label for="f-estado">Estado</label>
+          <select id="f-estado" pInputText [(ngModel)]="filtroEstado">
+            <option value="">Todos</option>
+            <option *ngFor="let e of estados | keyvalue" [value]="e.key">{{ e.value }}</option>
+          </select>
+        </div>
+        <span class="spacer"></span>
+        <p-button *ngIf="puedeGestionar && !formulario" label="Nuevo pedido" icon="pi pi-plus" severity="warn" (onClick)="nuevoPedido()"></p-button>
+      </div>
+
+      <section class="card animate__animated animate__fadeIn" *ngIf="formulario === 'pedido'">
+        <h2>Nuevo pedido</h2>
+        <form [formGroup]="formPedido" (ngSubmit)="guardarPedido()" novalidate>
+          <div class="form-grid">
+            <div class="field">
+              <label for="p-cli">Cliente *</label>
+              <select id="p-cli" pInputText formControlName="idCliente">
+                <option [ngValue]="null" disabled>Selecciona un cliente</option>
+                <option *ngFor="let c of clientesActivos" [ngValue]="c.idCliente">{{ c.nombre }} ({{ c.tipoCliente }})</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="p-fecha">Entrega estimada *</label>
+              <input id="p-fecha" pInputText type="date" formControlName="fechaEstimadaEntrega" [min]="hoy" />
+            </div>
+            <div class="field">
+              <label for="p-obs">Observaciones</label>
+              <input id="p-obs" pInputText formControlName="observaciones" maxlength="300" />
+            </div>
+          </div>
+          <h3 class="subtitulo">Aves por lote</h3>
+          <div class="lineas" formArrayName="detalle">
+            <div class="linea" *ngFor="let l of lineas.controls; let i = index" [formGroupName]="i">
+              <select pInputText formControlName="idLote" aria-label="Lote">
+                <option [ngValue]="null" disabled>Lote listo para venta</option>
+                <option *ngFor="let lote of lotesListos" [ngValue]="lote.id">{{ lote.codigo }} · {{ lote.galpon }} · {{ lote.avesDisponibles }} aves</option>
+              </select>
+              <input pInputText type="number" min="1" step="1" placeholder="Aves" formControlName="cantidadAves" aria-label="Aves" />
+              <span class="ayuda">{{ disponibles(l.value.idLote) !== null ? 'Disponibles: ' + disponibles(l.value.idLote) : '' }}</span>
+              <p-button type="button" icon="pi pi-trash" severity="danger" [text]="true" ariaLabel="Quitar" (onClick)="quitarLinea(i)"></p-button>
+            </div>
+          </div>
+          <small class="ayuda" *ngIf="!lotesListos.length">No hay lotes listos para venta. Cambia el estado del lote en Lotes.</small>
+          <div class="toolbar">
+            <p-button type="button" label="Agregar lote" icon="pi pi-plus" [text]="true" (onClick)="agregarLinea()"></p-button>
+            <span class="spacer"></span>
+            <strong>Total: {{ totalAvesPedido }} aves</strong>
+          </div>
+          <div class="form-actions">
+            <p-button type="button" label="Cancelar" severity="secondary" [outlined]="true" (onClick)="formulario = null"></p-button>
+            <p-button type="submit" label="Crear pedido" icon="pi pi-check" [loading]="guardando"></p-button>
+          </div>
+        </form>
+      </section>
+
+      <section class="card animate__animated animate__fadeIn" *ngIf="formulario === 'venta' && pedidoVenta">
+        <h2>Registrar venta del pedido {{ pedidoVenta.idPedido }}</h2>
+        <p class="ayuda">{{ pedidoVenta.cliente }} · {{ pedidoVenta.totalAves }} aves de {{ pedidoVenta.lotes }}</p>
+        <form [formGroup]="formVenta" (ngSubmit)="guardarVenta()" novalidate>
+          <div class="form-grid">
+            <div class="field">
+              <label for="v-fecha">Fecha de salida *</label>
+              <input id="v-fecha" pInputText type="date" formControlName="fechaVenta" [max]="hoy" />
+            </div>
+            <div class="field">
+              <label for="v-prom">Peso promedio por ave (lb)</label>
+              <input id="v-prom" pInputText type="number" step="0.01" min="0" formControlName="pesoPromedioLibras" (input)="calcularPesoTotal()" />
+              <small class="ayuda">Calcula el peso total con las {{ pedidoVenta.totalAves }} aves.</small>
+            </div>
+            <div class="field">
+              <label for="v-peso">Peso total vendido (lb) *</label>
+              <input id="v-peso" pInputText type="number" step="0.01" min="0" formControlName="pesoTotalLibras" />
+            </div>
+            <div class="field">
+              <label for="v-precio">Precio por libra (COP) *</label>
+              <input id="v-precio" pInputText type="number" step="50" min="1" formControlName="precioLibra" />
+            </div>
+            <div class="field">
+              <label for="v-limite">Fecha límite de pago</label>
+              <input id="v-limite" pInputText type="date" formControlName="fechaLimitePago" />
+              <small class="ayuda">Vacía: 30 días después de la venta.</small>
+            </div>
+          </div>
+          <div class="toolbar"><span class="spacer"></span><strong>Valor de la venta: {{ valorVenta | currency:'COP':'$':'1.0-0' }}</strong></div>
+          <div class="form-actions">
+            <p-button type="button" label="Cancelar" severity="secondary" [outlined]="true" (onClick)="formulario = null"></p-button>
+            <p-button type="submit" label="Registrar venta" icon="pi pi-check" [loading]="guardando"></p-button>
+          </div>
+        </form>
+      </section>
+
+      <div *ngIf="loading" class="loading">Buscando información...</div>
+      <div *ngIf="!loading && errorMsg" class="error">{{ errorMsg }}</div>
+
+      <div class="table-wrapper" *ngIf="!loading && !errorMsg && visibles.length">
+        <table class="data-table">
+          <thead><tr><th>N.º</th><th>Fecha</th><th>Cliente</th><th>Lotes</th><th class="num">Aves</th><th>Entrega estimada</th><th>Estado</th><th></th></tr></thead>
+          <tbody>
+            <tr *ngFor="let p of visibles">
+              <td>{{ p.idPedido }}</td>
+              <td>{{ p.fechaPedido | date:'dd/MM/yyyy' }}</td>
+              <td><strong>{{ p.cliente }}</strong></td>
+              <td>{{ p.lotes }}</td>
+              <td class="num">{{ p.totalAves }}</td>
+              <td>{{ p.fechaEstimadaEntrega | date:'dd/MM/yyyy' }}</td>
+              <td><span class="chip" [ngClass]="claseEstado(p)">{{ estados[p.estado] }}</span>
+                <span class="chip verde" *ngIf="p.idVenta">Venta {{ p.idVenta }}</span></td>
+              <td class="acciones">
+                <ng-container *ngIf="puedeGestionar">
+                  <p-button *ngIf="p.estado === 'PENDIENTE'" label="Confirmar" size="small" [text]="true" (onClick)="confirmar(p)"></p-button>
+                  <p-button *ngIf="(p.estado === 'PENDIENTE' || p.estado === 'CONFIRMADO') && !p.idVenta" icon="pi pi-times" severity="danger" [text]="true" ariaLabel="Cancelar pedido" (onClick)="cancelar(p)"></p-button>
+                </ng-container>
+                <p-button *ngIf="puedeVender && p.estado === 'CONFIRMADO' && !p.idVenta" label="Vender" icon="pi pi-dollar" size="small" severity="warn" (onClick)="vender(p)"></p-button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div *ngIf="!loading && !errorMsg && !visibles.length" class="no-data">No hay pedidos para mostrar.</div>
+    </main>
+  </div>
+</div>

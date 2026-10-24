@@ -5,7 +5,7 @@
     <main class="content">
       <header>
         <h1>Seguimiento del crecimiento</h1>
-        <p>Registro diario de peso, condiciones del galpón y novedades de cada lote activo.</p>
+        <p>Registro de peso, muestreos y novedades de cada lote activo. Se pueden hacer varios registros del mismo lote en un día.</p>
       </header>
 
       <div class="toolbar">
@@ -29,8 +29,12 @@
         <form [formGroup]="form" (ngSubmit)="guardar()" novalidate>
           <div class="form-grid">
             <div class="field">
-              <label for="codigoLote">Código del lote *</label>
-              <input id="codigoLote" pInputText formControlName="codigoLote" maxlength="30" />
+              <label for="codigoLote">Lote *</label>
+              <select id="codigoLote" pInputText formControlName="codigoLote">
+                <option value="" disabled>Selecciona un lote activo</option>
+                <option *ngFor="let l of lotesActivos" [value]="l.codigo">{{ l.codigo }} · {{ l.galpon }} · día {{ l.edadDias }}</option>
+                <option *ngIf="editandoId" [value]="form.getRawValue().codigoLote">{{ form.getRawValue().codigoLote }}</option>
+              </select>
               <small class="err" *ngIf="f['codigoLote'].invalid && f['codigoLote'].touched">El lote es obligatorio.</small>
             </div>
             <div class="field">
@@ -41,16 +45,6 @@
               <label for="peso">Peso promedio (g)</label>
               <input id="peso" pInputText type="number" step="0.1" formControlName="pesoPromedioGramos" />
               <small class="err" *ngIf="f['pesoPromedioGramos'].invalid">Debe ser mayor que cero.</small>
-            </div>
-            <div class="field">
-              <label for="temp">Temperatura (°C)</label>
-              <input id="temp" pInputText type="number" step="0.1" formControlName="temperaturaCelsius" />
-              <small class="err" *ngIf="f['temperaturaCelsius'].invalid">Entre -10 y 60 °C.</small>
-            </div>
-            <div class="field">
-              <label for="humedad">Humedad relativa (%)</label>
-              <input id="humedad" pInputText type="number" step="0.1" formControlName="humedadRelativa" />
-              <small class="err" *ngIf="f['humedadRelativa'].invalid">Entre 0 y 100.</small>
             </div>
           </div>
 
@@ -121,8 +115,6 @@
               <th>Lote</th>
               <th>Día</th>
               <th>Peso (g)</th>
-              <th>Temp. (°C)</th>
-              <th>Humedad (%)</th>
               <th>Uniformidad</th>
               <th>Novedades</th>
               <th *ngIf="puedeRegistrar"></th>
@@ -134,8 +126,6 @@
               <td>{{ s.codigoLote }}</td>
               <td>{{ s.edadDias ?? '-' }}</td>
               <td>{{ s.pesoPromedioGramos != null ? (s.pesoPromedioGramos | number:'1.0-1') : '-' }}</td>
-              <td>{{ s.temperaturaCelsius ?? '-' }}</td>
-              <td>{{ s.humedadRelativa ?? '-' }}</td>
               <td>{{ s.muestreo ? (s.muestreo.uniformidadPorcentaje + '% de ' + s.muestreo.avesPesadas) : '-' }}</td>
               <td>
                 <span class="chip" *ngFor="let n of s.novedades" [attr.title]="n.descripcion">{{ n.tipo }}</span>

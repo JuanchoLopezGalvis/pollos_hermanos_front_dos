@@ -1,0 +1,99 @@
+<div class="body-wrapper">
+  <div class="glass-container">
+    <app-sidebar></app-sidebar>
+
+    <main class="content">
+      <header>
+        <h1>Personal</h1>
+        <p>Empleados y su cargo. Sanidad, beneficio y entregas solo aceptan empleados activos con el cargo que corresponde.</p>
+      </header>
+
+      <div class="resumen" *ngIf="empleados.length">
+        <div class="dato" *ngFor="let c of cargos"><strong>{{ contar(c.codigo) }}</strong><span>{{ c.nombre }}</span></div>
+      </div>
+
+      <div class="toolbar">
+        <div class="field">
+          <label for="filtroCargo">Cargo</label>
+          <select id="filtroCargo" pInputText [(ngModel)]="filtroCargo">
+            <option value="">Todos</option>
+            <option *ngFor="let c of cargos" [value]="c.codigo">{{ c.nombre }}</option>
+          </select>
+        </div>
+        <label class="check-inline"><input type="checkbox" [(ngModel)]="verRetirados" /> Ver retirados</label>
+        <span class="spacer"></span>
+        <p-button *ngIf="puedeGestionar && !mostrarFormulario" label="Nuevo empleado" icon="pi pi-plus" severity="warn" (onClick)="nuevo()"></p-button>
+      </div>
+
+      <section class="card animate__animated animate__fadeIn" *ngIf="mostrarFormulario">
+        <h2>{{ editando ? 'Editar empleado' : 'Nuevo empleado' }}</h2>
+        <form [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+          <div class="form-grid">
+            <div class="field">
+              <label for="documento">Documento *</label>
+              <input id="documento" pInputText formControlName="documento" maxlength="20" />
+              <small class="err" *ngIf="f['documento'].invalid && f['documento'].touched">El documento es obligatorio.</small>
+            </div>
+            <div class="field">
+              <label for="nombres">Nombres *</label>
+              <input id="nombres" pInputText formControlName="nombres" maxlength="80" />
+            </div>
+            <div class="field">
+              <label for="apellidos">Apellidos *</label>
+              <input id="apellidos" pInputText formControlName="apellidos" maxlength="80" />
+            </div>
+            <div class="field">
+              <label for="telefono">Teléfono</label>
+              <input id="telefono" pInputText formControlName="telefono" maxlength="20" />
+            </div>
+            <div class="field">
+              <label for="cargo">Cargo *</label>
+              <select id="cargo" pInputText formControlName="idCargo">
+                <option [ngValue]="null" disabled>Selecciona un cargo</option>
+                <option *ngFor="let c of cargos" [ngValue]="c.id">{{ c.nombre }}</option>
+              </select>
+              <small class="ayuda" *ngIf="f['idCargo'].disabled">A un empleado retirado no se le cambia el cargo.</small>
+            </div>
+            <div class="field">
+              <label for="ingreso">Fecha de ingreso *</label>
+              <input id="ingreso" pInputText type="date" formControlName="fechaIngreso" [max]="hoy" />
+            </div>
+          </div>
+          <div class="form-actions">
+            <p-button type="button" label="Cancelar" severity="secondary" [outlined]="true" (onClick)="cancelar()"></p-button>
+            <p-button type="submit" [label]="editando ? 'Guardar cambios' : 'Registrar'" icon="pi pi-check" [loading]="guardando"></p-button>
+          </div>
+        </form>
+      </section>
+
+      <div *ngIf="loading" class="loading">Buscando información...</div>
+      <div *ngIf="!loading && errorMsg" class="error">{{ errorMsg }}</div>
+
+      <div class="table-wrapper" *ngIf="!loading && !errorMsg && visibles.length">
+        <table class="data-table">
+          <thead>
+            <tr><th>Documento</th><th>Nombre</th><th>Cargo</th><th>Teléfono</th><th>Ingreso</th><th>Estado</th><th *ngIf="puedeGestionar"></th></tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let e of visibles">
+              <td>{{ e.documento }}</td>
+              <td>{{ e.nombres }} {{ e.apellidos }}</td>
+              <td>{{ e.cargo }}</td>
+              <td>{{ e.telefono || '-' }}</td>
+              <td>{{ e.fechaIngreso | date:'dd/MM/yyyy' }}</td>
+              <td>
+                <span class="chip verde" *ngIf="e.activo">Activo</span>
+                <span class="chip gris" *ngIf="!e.activo">Retirado {{ e.fechaRetiro | date:'dd/MM/yyyy' }}</span>
+              </td>
+              <td class="acciones" *ngIf="puedeGestionar">
+                <p-button icon="pi pi-pencil" [text]="true" ariaLabel="Editar" (onClick)="editar(e)"></p-button>
+                <p-button *ngIf="e.activo" icon="pi pi-user-minus" severity="danger" [text]="true" ariaLabel="Retirar" (onClick)="retirar(e)"></p-button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div *ngIf="!loading && !errorMsg && !visibles.length" class="no-data">No hay empleados para mostrar.</div>
+    </main>
+  </div>
+</div>

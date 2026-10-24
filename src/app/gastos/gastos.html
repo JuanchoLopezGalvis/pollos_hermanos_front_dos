@@ -1,0 +1,207 @@
+<div class="body-wrapper">
+  <div class="glass-container">
+    <app-sidebar></app-sidebar>
+
+    <main class="content">
+      <header>
+        <h1>Gastos y beneficio</h1>
+        <p>Gastos de cada lote o de la finca, jornadas de beneficio pagadas por pollo y otros ingresos del lote.</p>
+      </header>
+
+      <div class="resumen">
+        <div class="dato"><strong>{{ totalGastosLote | currency:'COP':'$':'1.0-0' }}</strong><span>gastos cargados a lotes</span></div>
+        <div class="dato"><strong>{{ totalGastosFinca | currency:'COP':'$':'1.0-0' }}</strong><span>gastos generales de la finca</span></div>
+        <div class="dato"><strong>{{ jornadas.length }}</strong><span>jornadas de beneficio</span></div>
+      </div>
+
+      <div class="toolbar">
+        <div class="tabs" role="tablist">
+          <button type="button" [class.activa]="pestana === 'gastos'" (click)="pestana = 'gastos'">Gastos</button>
+          <button type="button" [class.activa]="pestana === 'beneficio'" (click)="pestana = 'beneficio'">Beneficio</button>
+          <button type="button" [class.activa]="pestana === 'ingresos'" (click)="pestana = 'ingresos'">Otros ingresos</button>
+        </div>
+        <span class="spacer"></span>
+        <ng-container *ngIf="!formulario">
+          <p-button *ngIf="puedeGasto" label="Registrar gasto" icon="pi pi-plus" severity="warn" (onClick)="abrir('gasto')"></p-button>
+          <p-button *ngIf="puedeBeneficio" label="Jornada de beneficio" icon="pi pi-users" severity="secondary" [outlined]="true" (onClick)="abrir('jornada')"></p-button>
+          <p-button *ngIf="puedeIngreso" label="Otro ingreso" icon="pi pi-dollar" severity="secondary" [text]="true" (onClick)="abrir('ingreso')"></p-button>
+        </ng-container>
+      </div>
+
+      <section class="card animate__animated animate__fadeIn" *ngIf="formulario === 'gasto'">
+        <h2>Registrar gasto</h2>
+        <form [formGroup]="formGasto" (ngSubmit)="guardar()" novalidate>
+          <div class="form-grid">
+            <div class="field">
+              <label for="g-cat">Categoría *</label>
+              <select id="g-cat" pInputText formControlName="idCategoriaGasto">
+                <option [ngValue]="null" disabled>Selecciona una categoría</option>
+                <option *ngFor="let c of categorias" [ngValue]="c.id">{{ c.nombre }}</option>
+              </select>
+              <small class="ayuda">El pago a las beneficiadoras se registra en Beneficio, no aquí.</small>
+            </div>
+            <div class="field">
+              <label for="g-lote">Lote</label>
+              <select id="g-lote" pInputText formControlName="idLote">
+                <option [ngValue]="null">General de la finca</option>
+                <option *ngFor="let l of lotesNoCerrados" [ngValue]="l.id">{{ l.codigo }}</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="g-fecha">Fecha *</label>
+              <input id="g-fecha" pInputText type="date" formControlName="fecha" [max]="hoy" />
+            </div>
+            <div class="field">
+              <label for="g-monto">Monto (COP) *</label>
+              <input id="g-monto" pInputText type="number" step="100" min="1" formControlName="monto" />
+            </div>
+            <div class="field field-full">
+              <label for="g-desc">Descripción *</label>
+              <input id="g-desc" pInputText formControlName="descripcion" maxlength="200" />
+            </div>
+          </div>
+          <div class="form-actions">
+            <p-button type="button" label="Cancelar" severity="secondary" [outlined]="true" (onClick)="formulario = null"></p-button>
+            <p-button type="submit" label="Registrar" icon="pi pi-check" [loading]="guardando"></p-button>
+          </div>
+        </form>
+      </section>
+
+      <section class="card animate__animated animate__fadeIn" *ngIf="formulario === 'jornada'">
+        <h2>Jornada de beneficio</h2>
+        <form [formGroup]="formJornada" (ngSubmit)="guardar()" novalidate>
+          <div class="form-grid">
+            <div class="field">
+              <label for="j-lote">Lote *</label>
+              <select id="j-lote" pInputText formControlName="idLote">
+                <option [ngValue]="null" disabled>Lote listo para venta</option>
+                <option *ngFor="let l of lotesParaBeneficio" [ngValue]="l.id">{{ l.codigo }} · {{ l.avesDisponibles }} aves vivas</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="j-fecha">Fecha *</label>
+              <input id="j-fecha" pInputText type="date" formControlName="fecha" [max]="hoy" />
+            </div>
+            <div class="field">
+              <label for="j-obs">Observaciones</label>
+              <input id="j-obs" pInputText formControlName="observaciones" maxlength="300" />
+            </div>
+          </div>
+          <h3 class="subtitulo">Beneficiadoras</h3>
+          <div class="lineas" formArrayName="detalle">
+            <div class="linea" *ngFor="let l of lineas.controls; let i = index" [formGroupName]="i">
+              <select pInputText formControlName="idEmpleado" aria-label="Beneficiadora">
+                <option [ngValue]="null" disabled>Beneficiadora</option>
+                <option *ngFor="let e of beneficiadoras" [ngValue]="e.idEmpleado">{{ e.nombres }} {{ e.apellidos }}</option>
+              </select>
+              <input pInputText type="number" min="1" step="1" placeholder="Pollos" formControlName="avesBeneficiadas" aria-label="Pollos beneficiados" />
+              <input pInputText type="number" min="1" step="50" placeholder="Tarifa por pollo" formControlName="tarifaPorAve" aria-label="Tarifa por pollo" />
+              <p-button type="button" icon="pi pi-trash" severity="danger" [text]="true" ariaLabel="Quitar" (onClick)="quitarLinea(i)"></p-button>
+            </div>
+          </div>
+          <small class="ayuda" *ngIf="!beneficiadoras.length">No hay beneficiadoras activas: regístralas en Personal con el cargo "Beneficiadora".</small>
+          <div class="toolbar">
+            <p-button type="button" label="Agregar beneficiadora" icon="pi pi-plus" [text]="true" (onClick)="agregarLinea()"></p-button>
+            <span class="spacer"></span>
+            <strong>Total a pagar: {{ totalJornada | currency:'COP':'$':'1.0-0' }}</strong>
+          </div>
+          <div class="form-actions">
+            <p-button type="button" label="Cancelar" severity="secondary" [outlined]="true" (onClick)="formulario = null"></p-button>
+            <p-button type="submit" label="Registrar jornada" icon="pi pi-check" [loading]="guardando"></p-button>
+          </div>
+        </form>
+      </section>
+
+      <section class="card animate__animated animate__fadeIn" *ngIf="formulario === 'ingreso'">
+        <h2>Otro ingreso del lote</h2>
+        <form [formGroup]="formIngreso" (ngSubmit)="guardar()" novalidate>
+          <div class="form-grid">
+            <div class="field">
+              <label for="i-lote">Lote *</label>
+              <select id="i-lote" pInputText formControlName="idLote">
+                <option [ngValue]="null" disabled>Selecciona un lote</option>
+                <option *ngFor="let l of lotesNoCerrados" [ngValue]="l.id">{{ l.codigo }}</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="i-fecha">Fecha *</label>
+              <input id="i-fecha" pInputText type="date" formControlName="fecha" [max]="hoy" />
+            </div>
+            <div class="field">
+              <label for="i-monto">Monto (COP) *</label>
+              <input id="i-monto" pInputText type="number" step="100" min="1" formControlName="monto" />
+            </div>
+            <div class="field field-full">
+              <label for="i-desc">Descripción *</label>
+              <input id="i-desc" pInputText formControlName="descripcion" maxlength="200" placeholder="Ej. venta de gallinaza" />
+            </div>
+          </div>
+          <div class="form-actions">
+            <p-button type="button" label="Cancelar" severity="secondary" [outlined]="true" (onClick)="formulario = null"></p-button>
+            <p-button type="submit" label="Registrar" icon="pi pi-check" [loading]="guardando"></p-button>
+          </div>
+        </form>
+      </section>
+
+      <div *ngIf="loading" class="loading">Buscando información...</div>
+      <div *ngIf="!loading && errorMsg" class="error">{{ errorMsg }}</div>
+
+      <ng-container *ngIf="!loading && !errorMsg">
+        <ng-container *ngIf="pestana === 'gastos'">
+          <div class="table-wrapper" *ngIf="gastos.length">
+            <table class="data-table">
+              <thead><tr><th>Fecha</th><th>Categoría</th><th>Lote</th><th>Descripción</th><th class="num">Monto</th></tr></thead>
+              <tbody>
+                <tr *ngFor="let g of gastos">
+                  <td>{{ g.fecha | date:'dd/MM/yyyy' }}</td><td>{{ g.categoria }}</td>
+                  <td><strong *ngIf="g.codigoLote">{{ g.codigoLote }}</strong><span class="chip gris" *ngIf="!g.codigoLote">Finca</span></td>
+                  <td>{{ g.descripcion }}</td><td class="num">{{ g.monto | currency:'COP':'$':'1.0-0' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="no-data" *ngIf="!gastos.length">No hay gastos registrados.</div>
+        </ng-container>
+
+        <ng-container *ngIf="pestana === 'beneficio'">
+          <div class="table-wrapper" *ngIf="jornadas.length">
+            <table class="data-table">
+              <thead><tr><th>Fecha</th><th>Lote</th><th class="num">Pollos</th><th class="num">Beneficiadoras</th><th class="num">Pago total</th><th></th></tr></thead>
+              <tbody>
+                <ng-container *ngFor="let j of jornadas">
+                  <tr>
+                    <td>{{ j.fecha | date:'dd/MM/yyyy' }}</td><td><strong>{{ j.codigoLote }}</strong></td>
+                    <td class="num">{{ j.avesBeneficiadas }}</td><td class="num">{{ j.beneficiadoras }}</td>
+                    <td class="num">{{ j.costoTotal | currency:'COP':'$':'1.0-0' }}</td>
+                    <td class="acciones"><p-button [icon]="detalle[j.idJornada] ? 'pi pi-chevron-up' : 'pi pi-chevron-down'" [text]="true" ariaLabel="Ver detalle" (onClick)="verDetalle(j)"></p-button></td>
+                  </tr>
+                  <tr *ngFor="let d of detalle[j.idJornada]" class="subfila">
+                    <td></td><td colspan="2">{{ d.beneficiadora }}</td>
+                    <td class="num">{{ d.avesBeneficiadas }} × {{ d.tarifaPorAve | currency:'COP':'$':'1.0-0' }}</td>
+                    <td class="num">{{ d.pago | currency:'COP':'$':'1.0-0' }}</td><td></td>
+                  </tr>
+                </ng-container>
+              </tbody>
+            </table>
+          </div>
+          <div class="no-data" *ngIf="!jornadas.length">No hay jornadas de beneficio registradas.</div>
+        </ng-container>
+
+        <ng-container *ngIf="pestana === 'ingresos'">
+          <div class="table-wrapper" *ngIf="ingresos.length">
+            <table class="data-table">
+              <thead><tr><th>Fecha</th><th>Lote</th><th>Descripción</th><th class="num">Monto</th></tr></thead>
+              <tbody>
+                <tr *ngFor="let i of ingresos">
+                  <td>{{ i.fecha | date:'dd/MM/yyyy' }}</td><td><strong>{{ i.codigoLote }}</strong></td>
+                  <td>{{ i.descripcion }}</td><td class="num">{{ i.monto | currency:'COP':'$':'1.0-0' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="no-data" *ngIf="!ingresos.length">No hay otros ingresos registrados.</div>
+        </ng-container>
+      </ng-container>
+    </main>
+  </div>
+</div>
