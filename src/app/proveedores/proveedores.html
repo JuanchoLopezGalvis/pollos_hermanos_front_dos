@@ -1,0 +1,83 @@
+<div class="body-wrapper">
+  <div class="glass-container">
+    <app-sidebar></app-sidebar>
+
+    <main class="content">
+      <header>
+        <h1>Proveedores</h1>
+        <p>Proveedores de alimento por bultos y de vitaminas y medicamentos.</p>
+      </header>
+
+      <div class="toolbar">
+        <span class="spacer"></span>
+        <p-button *ngIf="puedeGestionar && !mostrarFormulario" label="Nuevo proveedor" icon="pi pi-plus" severity="warn" (onClick)="nuevo()"></p-button>
+      </div>
+
+      <section class="card animate__animated animate__fadeIn" *ngIf="mostrarFormulario">
+        <h2>{{ editando ? 'Editar proveedor' : 'Nuevo proveedor' }}</h2>
+        <form [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+          <div class="form-grid">
+            <div class="field">
+              <label for="nit">NIT *</label>
+              <input id="nit" pInputText formControlName="nit" maxlength="20" />
+            </div>
+            <div class="field">
+              <label for="nombre">Nombre *</label>
+              <input id="nombre" pInputText formControlName="nombre" maxlength="120" />
+            </div>
+            <div class="field">
+              <label for="telefono">Teléfono</label>
+              <input id="telefono" pInputText formControlName="telefono" maxlength="20" />
+            </div>
+            <div class="field">
+              <label for="correo">Correo</label>
+              <input id="correo" pInputText formControlName="correo" maxlength="120" />
+              <small class="err" *ngIf="f['correo'].invalid && f['correo'].touched">No es un correo válido.</small>
+            </div>
+            <div class="field field-full">
+              <label for="direccion">Dirección</label>
+              <input id="direccion" pInputText formControlName="direccion" maxlength="200" />
+            </div>
+          </div>
+          <div class="check-list">
+            <label><input type="checkbox" formControlName="suministraAlimento" /> Suministra alimento</label>
+            <label><input type="checkbox" formControlName="suministraSanidad" /> Suministra vitaminas y medicamentos</label>
+            <label *ngIf="editando"><input type="checkbox" formControlName="activo" /> Activo</label>
+          </div>
+          <small class="err" *ngIf="form.errors?.['sinSuministro']">Marca al menos un tipo de suministro.</small>
+          <div class="form-actions">
+            <p-button type="button" label="Cancelar" severity="secondary" [outlined]="true" (onClick)="cancelar()"></p-button>
+            <p-button type="submit" [label]="editando ? 'Guardar cambios' : 'Registrar'" icon="pi pi-check" [loading]="guardando"></p-button>
+          </div>
+        </form>
+      </section>
+
+      <div *ngIf="loading" class="loading">Buscando información...</div>
+      <div *ngIf="!loading && errorMsg" class="error">{{ errorMsg }}</div>
+
+      <div class="table-wrapper" *ngIf="!loading && !errorMsg && proveedores.length">
+        <table class="data-table">
+          <thead>
+            <tr><th>NIT</th><th>Nombre</th><th>Suministra</th><th>Contacto</th><th>Estado</th><th *ngIf="puedeGestionar"></th></tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let p of proveedores">
+              <td>{{ p.nit }}</td>
+              <td>{{ p.nombre }}</td>
+              <td>
+                <span class="chip" *ngIf="p.suministraAlimento">Alimento</span>
+                <span class="chip verde" *ngIf="p.suministraSanidad">Sanidad</span>
+              </td>
+              <td>{{ p.telefono || p.correo || '-' }}</td>
+              <td><span class="chip" [class.gris]="!p.activo">{{ p.activo ? 'Activo' : 'Inactivo' }}</span></td>
+              <td class="acciones" *ngIf="puedeGestionar">
+                <p-button icon="pi pi-pencil" [text]="true" ariaLabel="Editar" (onClick)="editar(p)"></p-button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div *ngIf="!loading && !errorMsg && !proveedores.length" class="no-data">No hay proveedores registrados.</div>
+    </main>
+  </div>
+</div>

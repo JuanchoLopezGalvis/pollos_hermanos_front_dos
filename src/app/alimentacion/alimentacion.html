@@ -1,0 +1,199 @@
+<div class="body-wrapper">
+  <div class="glass-container">
+    <app-sidebar></app-sidebar>
+
+    <main class="content">
+      <header>
+        <h1>Alimentación</h1>
+        <p>Compras por bultos y consumo de cada lote. El alimento debe corresponder a la etapa según la edad del lote.</p>
+      </header>
+
+      <div class="resumen">
+        <div class="dato" *ngFor="let e of etapas">
+          <strong>{{ e.nombre }}</strong>
+          <span>Días {{ e.diaInicio }}{{ e.diaFin ? ' a ' + e.diaFin : ' en adelante' }}</span>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <div class="tabs" role="tablist">
+          <button type="button" [class.activa]="pestana === 'inventario'" (click)="pestana = 'inventario'">Inventario</button>
+          <button type="button" [class.activa]="pestana === 'compras'" (click)="pestana = 'compras'">Compras</button>
+          <button type="button" [class.activa]="pestana === 'consumos'" (click)="pestana = 'consumos'">Consumo por lote</button>
+        </div>
+        <span class="spacer"></span>
+        <ng-container *ngIf="puedeRegistrar && !formulario">
+          <p-button label="Registrar consumo" icon="pi pi-plus" severity="warn" (onClick)="abrir('consumo')"></p-button>
+          <p-button label="Registrar compra" icon="pi pi-cart-plus" severity="secondary" [outlined]="true" (onClick)="abrir('compra')"></p-button>
+          <p-button label="Nuevo alimento" icon="pi pi-tag" severity="secondary" [text]="true" (onClick)="abrir('tipo')"></p-button>
+        </ng-container>
+      </div>
+
+      <!-- Formularios -->
+      <section class="card animate__animated animate__fadeIn" *ngIf="formulario === 'consumo'">
+        <h2>Registrar consumo de alimento</h2>
+        <form [formGroup]="formConsumo" (ngSubmit)="guardar()" novalidate>
+          <div class="form-grid">
+            <div class="field">
+              <label for="c-lote">Lote *</label>
+              <select id="c-lote" pInputText formControlName="idLote" (change)="sugerirAlimento()">
+                <option [ngValue]="null" disabled>Selecciona un lote</option>
+                <option *ngFor="let l of lotesActivos" [ngValue]="l.id">{{ l.codigo }} · {{ l.galpon }} · día {{ l.edadDias }}</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="c-fecha">Fecha *</label>
+              <input id="c-fecha" pInputText type="date" formControlName="fecha" [max]="hoy" (change)="sugerirAlimento()" />
+            </div>
+            <div class="field">
+              <label for="c-tipo">Alimento *</label>
+              <select id="c-tipo" pInputText formControlName="idTipoAlimento">
+                <option [ngValue]="null" disabled>Selecciona un alimento</option>
+                <option *ngFor="let t of tiposActivos" [ngValue]="t.idTipoAlimento">{{ t.nombre }} ({{ t.etapa }}) · {{ t.bultosDisponibles }} bultos</option>
+              </select>
+              <small class="ayuda" *ngIf="etapaSugerida">Día {{ edadConsumo }}: etapa de {{ etapaSugerida.nombre | lowercase }}.</small>
+            </div>
+            <div class="field">
+              <label for="c-bultos">Bultos consumidos *</label>
+              <input id="c-bultos" pInputText type="number" step="0.5" min="0" formControlName="cantidadBultos" />
+            </div>
+          </div>
+          <div class="form-actions">
+            <p-button type="button" label="Cancelar" severity="secondary" [outlined]="true" (onClick)="formulario = null"></p-button>
+            <p-button type="submit" label="Registrar consumo" icon="pi pi-check" [loading]="guardando"></p-button>
+          </div>
+        </form>
+      </section>
+
+      <section class="card animate__animated animate__fadeIn" *ngIf="formulario === 'compra'">
+        <h2>Registrar compra de alimento</h2>
+        <form [formGroup]="formCompra" (ngSubmit)="guardar()" novalidate>
+          <div class="form-grid">
+            <div class="field">
+              <label for="p-prov">Proveedor *</label>
+              <select id="p-prov" pInputText formControlName="idProveedor">
+                <option [ngValue]="null" disabled>Selecciona un proveedor</option>
+                <option *ngFor="let p of proveedoresAlimento" [ngValue]="p.idProveedor">{{ p.nombre }}</option>
+              </select>
+              <small class="ayuda" *ngIf="!proveedoresAlimento.length">Registra primero un proveedor de alimento.</small>
+            </div>
+            <div class="field">
+              <label for="p-tipo">Alimento *</label>
+              <select id="p-tipo" pInputText formControlName="idTipoAlimento">
+                <option [ngValue]="null" disabled>Selecciona un alimento</option>
+                <option *ngFor="let t of tiposActivos" [ngValue]="t.idTipoAlimento">{{ t.nombre }} ({{ t.etapa }})</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="p-fecha">Fecha *</label>
+              <input id="p-fecha" pInputText type="date" formControlName="fecha" [max]="hoy" />
+            </div>
+            <div class="field">
+              <label for="p-bultos">Bultos *</label>
+              <input id="p-bultos" pInputText type="number" step="1" min="1" formControlName="cantidadBultos" />
+            </div>
+            <div class="field">
+              <label for="p-costo">Costo por bulto (COP) *</label>
+              <input id="p-costo" pInputText type="number" step="100" min="1" formControlName="costoUnitario" />
+            </div>
+          </div>
+          <div class="form-actions">
+            <p-button type="button" label="Cancelar" severity="secondary" [outlined]="true" (onClick)="formulario = null"></p-button>
+            <p-button type="submit" label="Registrar compra" icon="pi pi-check" [loading]="guardando"></p-button>
+          </div>
+        </form>
+      </section>
+
+      <section class="card animate__animated animate__fadeIn" *ngIf="formulario === 'tipo'">
+        <h2>Nuevo tipo de alimento</h2>
+        <form [formGroup]="formTipo" (ngSubmit)="guardar()" novalidate>
+          <div class="form-grid">
+            <div class="field">
+              <label for="t-nombre">Nombre *</label>
+              <input id="t-nombre" pInputText formControlName="nombre" maxlength="80" />
+            </div>
+            <div class="field">
+              <label for="t-etapa">Etapa *</label>
+              <select id="t-etapa" pInputText formControlName="idEtapa">
+                <option [ngValue]="null" disabled>Selecciona una etapa</option>
+                <option *ngFor="let e of etapas" [ngValue]="e.idEtapa">{{ e.nombre }}</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="t-peso">Peso del bulto (kg)</label>
+              <input id="t-peso" pInputText type="number" step="0.5" formControlName="pesoBultoKg" />
+            </div>
+          </div>
+          <div class="form-actions">
+            <p-button type="button" label="Cancelar" severity="secondary" [outlined]="true" (onClick)="formulario = null"></p-button>
+            <p-button type="submit" label="Crear" icon="pi pi-check" [loading]="guardando"></p-button>
+          </div>
+        </form>
+      </section>
+
+      <div *ngIf="loading" class="loading">Buscando información...</div>
+      <div *ngIf="!loading && errorMsg" class="error">{{ errorMsg }}</div>
+
+      <ng-container *ngIf="!loading && !errorMsg">
+        <div class="table-wrapper" *ngIf="pestana === 'inventario'">
+          <table class="data-table">
+            <thead><tr><th>Alimento</th><th>Etapa</th><th class="num">Comprados</th><th class="num">Consumidos</th><th class="num">En bodega</th><th class="num">Costo promedio</th></tr></thead>
+            <tbody>
+              <tr *ngFor="let t of inventario">
+                <td><strong>{{ t.nombre }}</strong> <span class="ayuda">({{ t.pesoBultoKg }} kg)</span></td>
+                <td>{{ t.etapa }}</td>
+                <td class="num">{{ t.bultosComprados | number:'1.0-2' }}</td>
+                <td class="num">{{ t.bultosConsumidos | number:'1.0-2' }}</td>
+                <td class="num"><span class="chip" [class.rojo]="t.bultosDisponibles <= 0" [class.verde]="t.bultosDisponibles > 0">{{ t.bultosDisponibles | number:'1.0-2' }}</span></td>
+                <td class="num">{{ t.costoPromedio != null ? (t.costoPromedio | currency:'COP':'$':'1.0-0') : '-' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <ng-container *ngIf="pestana === 'compras'">
+          <div class="table-wrapper" *ngIf="compras.length">
+            <table class="data-table">
+              <thead><tr><th>Fecha</th><th>Proveedor</th><th>Alimento</th><th class="num">Bultos</th><th class="num">Costo por bulto</th><th class="num">Total</th></tr></thead>
+              <tbody>
+                <tr *ngFor="let c of compras">
+                  <td>{{ c.fecha | date:'dd/MM/yyyy' }}</td><td>{{ c.proveedor }}</td><td>{{ c.tipoAlimento }}</td>
+                  <td class="num">{{ c.cantidadBultos }}</td>
+                  <td class="num">{{ c.costoUnitario | currency:'COP':'$':'1.0-0' }}</td>
+                  <td class="num">{{ c.total | currency:'COP':'$':'1.0-0' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="no-data" *ngIf="!compras.length">No hay compras registradas.</div>
+        </ng-container>
+
+        <ng-container *ngIf="pestana === 'consumos'">
+          <div class="toolbar">
+            <div class="field">
+              <label for="f-lote">Lote</label>
+              <select id="f-lote" pInputText [(ngModel)]="filtroLote">
+                <option [ngValue]="null">Todos</option>
+                <option *ngFor="let l of lotes" [ngValue]="l.id">{{ l.codigo }}</option>
+              </select>
+            </div>
+          </div>
+          <div class="table-wrapper" *ngIf="consumosVisibles.length">
+            <table class="data-table">
+              <thead><tr><th>Fecha</th><th>Lote</th><th>Día</th><th>Alimento</th><th class="num">Bultos</th><th class="num">Costo por bulto</th><th class="num">Costo cargado</th></tr></thead>
+              <tbody>
+                <tr *ngFor="let c of consumosVisibles">
+                  <td>{{ c.fecha | date:'dd/MM/yyyy' }}</td><td><strong>{{ c.codigoLote }}</strong></td><td>{{ c.edadDias }}</td>
+                  <td>{{ c.tipoAlimento }}</td><td class="num">{{ c.cantidadBultos | number:'1.0-2' }}</td>
+                  <td class="num">{{ c.costoUnitario | currency:'COP':'$':'1.0-0' }}</td>
+                  <td class="num">{{ c.costoTotal | currency:'COP':'$':'1.0-0' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="no-data" *ngIf="!consumosVisibles.length">No hay consumos registrados.</div>
+        </ng-container>
+      </ng-container>
+    </main>
+  </div>
+</div>

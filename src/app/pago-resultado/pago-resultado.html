@@ -1,0 +1,37 @@
+<div class="body-wrapper">
+  <div class="glass-container">
+
+    <main class="content">
+      <header>
+        <h1>Resultado del pago en línea</h1>
+        <p>El sistema consulta la transacción directamente en la pasarela antes de registrarla.</p>
+      </header>
+
+      <div *ngIf="cargando" class="loading">Consultando la transacción {{ idTransaccion }}...</div>
+      <div *ngIf="!cargando && errorMsg" class="error">{{ errorMsg }}</div>
+      <a *ngIf="!cargando && errorMsg" routerLink="/portal" [queryParams]="{ ver: 'compras' }">
+        <p-button label="Volver a mis compras" icon="pi pi-arrow-left" severity="secondary" [outlined]="true"></p-button>
+      </a>
+
+      <section class="card" *ngIf="!cargando && resultado">
+        <div class="encabezado-detalle">
+          <i class="pi" [ngClass]="resultado.registrado ? 'pi-check-circle positivo' : 'pi-times-circle negativo'" style="font-size: 2rem" aria-hidden="true"></i>
+          <h2>{{ resultado.registrado ? 'Pago registrado' : 'Pago no registrado' }}</h2>
+        </div>
+        <p>{{ resultado.mensaje }}</p>
+        <dl class="ficha">
+          <dt>Transacción</dt><dd>{{ resultado.idTransaccion }}</dd>
+          <dt>Estado en la pasarela</dt><dd>{{ resultado.estadoTransaccion }}</dd>
+          <dt>Monto</dt><dd>{{ resultado.monto | currency:'COP':'$':'1.0-0' }}</dd>
+          <dt *ngIf="resultado.saldo != null">Saldo de la venta</dt><dd *ngIf="resultado.saldo != null">{{ resultado.saldo | currency:'COP':'$':'1.0-0' }}</dd>
+        </dl>
+        <div class="form-actions">
+          <p-button *ngIf="resultado.estadoTransaccion === 'PENDING'" label="Volver a consultar" icon="pi pi-refresh" severity="secondary" [outlined]="true" (onClick)="confirmar()"></p-button>
+          <a routerLink="/portal" [queryParams]="{ ver: 'compras' }">
+            <p-button label="Volver a mis compras" icon="pi pi-arrow-right"></p-button>
+          </a>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>

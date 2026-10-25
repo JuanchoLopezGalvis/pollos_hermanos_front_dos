@@ -1,0 +1,210 @@
+<div class="body-wrapper">
+  <div class="glass-container">
+    <app-sidebar></app-sidebar>
+
+    <main class="content">
+      <header>
+        <h1>Sanidad</h1>
+        <p>Vitaminas de la primera semana y medicamentos por lote. Cada aplicación queda a nombre del encargado de sanidad y su costo se suma al lote.</p>
+      </header>
+
+      <div class="toolbar">
+        <div class="tabs" role="tablist">
+          <button type="button" [class.activa]="pestana === 'aplicaciones'" (click)="pestana = 'aplicaciones'">Aplicaciones</button>
+          <button type="button" [class.activa]="pestana === 'productos'" (click)="pestana = 'productos'">Productos</button>
+          <button type="button" [class.activa]="pestana === 'compras'" (click)="pestana = 'compras'">Compras</button>
+        </div>
+        <span class="spacer"></span>
+        <ng-container *ngIf="puedeRegistrar && !formulario">
+          <p-button label="Registrar aplicación" icon="pi pi-plus" severity="warn" (onClick)="abrir('aplicacion')"></p-button>
+          <p-button label="Registrar compra" icon="pi pi-cart-plus" severity="secondary" [outlined]="true" (onClick)="abrir('compra')"></p-button>
+          <p-button label="Nuevo producto" icon="pi pi-tag" severity="secondary" [text]="true" (onClick)="abrir('producto')"></p-button>
+        </ng-container>
+      </div>
+
+      <section class="card animate__animated animate__fadeIn" *ngIf="formulario === 'aplicacion'">
+        <h2>Registrar aplicación</h2>
+        <form [formGroup]="formAplicacion" (ngSubmit)="guardar()" novalidate>
+          <div class="form-grid">
+            <div class="field">
+              <label for="a-lote">Lote *</label>
+              <select id="a-lote" pInputText formControlName="idLote">
+                <option [ngValue]="null" disabled>Selecciona un lote</option>
+                <option *ngFor="let l of lotesActivos" [ngValue]="l.id">{{ l.codigo }} · día {{ l.edadDias }}</option>
+              </select>
+              <small class="ayuda" *ngIf="edadAplicacion !== null && edadAplicacion <= 7">Día {{ edadAplicacion }}: primera semana del lote (vitaminas).</small>
+            </div>
+            <div class="field">
+              <label for="a-prod">Producto *</label>
+              <select id="a-prod" pInputText formControlName="idProducto">
+                <option [ngValue]="null" disabled>Selecciona un producto</option>
+                <option *ngFor="let p of productosActivos" [ngValue]="p.idProducto">{{ p.nombre }} · {{ p.presentacion }}</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="a-resp">Responsable *</label>
+              <select id="a-resp" pInputText formControlName="idEmpleado">
+                <option [ngValue]="null" disabled>Encargado de sanidad</option>
+                <option *ngFor="let e of encargados" [ngValue]="e.idEmpleado">{{ e.nombres }} {{ e.apellidos }}</option>
+              </select>
+              <small class="ayuda" *ngIf="!encargados.length">No hay encargados de sanidad activos en Personal.</small>
+            </div>
+            <div class="field">
+              <label for="a-fecha">Fecha *</label>
+              <input id="a-fecha" pInputText type="date" formControlName="fecha" [max]="hoy" />
+            </div>
+            <div class="field">
+              <label for="a-dosis">Cantidad aplicada * <span class="ayuda" *ngIf="productoElegido">({{ productoElegido.unidadMedida }})</span></label>
+              <input id="a-dosis" pInputText type="number" step="0.1" min="0" formControlName="dosis" />
+            </div>
+            <div class="field field-full">
+              <label for="a-obs">Observaciones del responsable</label>
+              <input id="a-obs" pInputText formControlName="observaciones" maxlength="300" placeholder="Ej. en el agua de bebida" />
+            </div>
+          </div>
+          <div class="form-actions">
+            <p-button type="button" label="Cancelar" severity="secondary" [outlined]="true" (onClick)="formulario = null"></p-button>
+            <p-button type="submit" label="Registrar aplicación" icon="pi pi-check" [loading]="guardando"></p-button>
+          </div>
+        </form>
+      </section>
+
+      <section class="card animate__animated animate__fadeIn" *ngIf="formulario === 'compra'">
+        <h2>Registrar compra</h2>
+        <form [formGroup]="formCompra" (ngSubmit)="guardar()" novalidate>
+          <div class="form-grid">
+            <div class="field">
+              <label for="c-prod">Producto *</label>
+              <select id="c-prod" pInputText formControlName="idProducto">
+                <option [ngValue]="null" disabled>Selecciona un producto</option>
+                <option *ngFor="let p of productosActivos" [ngValue]="p.idProducto">{{ p.nombre }} · {{ p.presentacion }} ({{ p.unidadMedida }})</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="c-fecha">Fecha *</label>
+              <input id="c-fecha" pInputText type="date" formControlName="fecha" [max]="hoy" />
+            </div>
+            <div class="field">
+              <label for="c-cant">Cantidad *</label>
+              <input id="c-cant" pInputText type="number" step="0.1" min="0" formControlName="cantidad" />
+            </div>
+            <div class="field">
+              <label for="c-costo">Costo por unidad (COP) *</label>
+              <input id="c-costo" pInputText type="number" step="1" min="0" formControlName="costoUnitario" />
+            </div>
+          </div>
+          <div class="form-actions">
+            <p-button type="button" label="Cancelar" severity="secondary" [outlined]="true" (onClick)="formulario = null"></p-button>
+            <p-button type="submit" label="Registrar compra" icon="pi pi-check" [loading]="guardando"></p-button>
+          </div>
+        </form>
+      </section>
+
+      <section class="card animate__animated animate__fadeIn" *ngIf="formulario === 'producto'">
+        <h2>{{ editandoProducto ? 'Editar producto' : 'Nuevo producto' }}</h2>
+        <form [formGroup]="formProducto" (ngSubmit)="guardar()" novalidate>
+          <div class="form-grid">
+            <div class="field">
+              <label for="p-nombre">Nombre *</label>
+              <input id="p-nombre" pInputText formControlName="nombre" maxlength="100" />
+            </div>
+            <div class="field">
+              <label for="p-tipo">Tipo *</label>
+              <select id="p-tipo" pInputText formControlName="tipo">
+                <option value="VITAMINA">Vitamina o suplemento</option>
+                <option value="MEDICAMENTO">Medicamento</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="p-pres">Presentación *</label>
+              <input id="p-pres" pInputText formControlName="presentacion" maxlength="80" placeholder="Ej. Sobre 100 g" />
+            </div>
+            <div class="field">
+              <label for="p-unidad">Unidad de medida *</label>
+              <input id="p-unidad" pInputText formControlName="unidadMedida" maxlength="20" placeholder="ml, g, dosis" />
+            </div>
+            <div class="field">
+              <label for="p-prov">Proveedor *</label>
+              <select id="p-prov" pInputText formControlName="idProveedor">
+                <option [ngValue]="null" disabled>Proveedor de sanidad</option>
+                <option *ngFor="let p of proveedoresSanidad" [ngValue]="p.idProveedor">{{ p.nombre }}</option>
+              </select>
+            </div>
+          </div>
+          <label class="check-inline" *ngIf="editandoProducto"><input type="checkbox" formControlName="activo" /> Activo</label>
+          <div class="form-actions">
+            <p-button type="button" label="Cancelar" severity="secondary" [outlined]="true" (onClick)="formulario = null"></p-button>
+            <p-button type="submit" [label]="editandoProducto ? 'Guardar cambios' : 'Crear'" icon="pi pi-check" [loading]="guardando"></p-button>
+          </div>
+        </form>
+      </section>
+
+      <div *ngIf="loading" class="loading">Buscando información...</div>
+      <div *ngIf="!loading && errorMsg" class="error">{{ errorMsg }}</div>
+
+      <ng-container *ngIf="!loading && !errorMsg">
+        <ng-container *ngIf="pestana === 'aplicaciones'">
+          <div class="toolbar">
+            <div class="field">
+              <label for="f-lote">Lote</label>
+              <select id="f-lote" pInputText [(ngModel)]="filtroLote">
+                <option [ngValue]="null">Todos</option>
+                <option *ngFor="let l of lotes" [ngValue]="l.id">{{ l.codigo }}</option>
+              </select>
+            </div>
+          </div>
+          <div class="table-wrapper" *ngIf="aplicacionesVisibles.length">
+            <table class="data-table">
+              <thead><tr><th>Fecha</th><th>Lote</th><th>Producto</th><th class="num">Cantidad</th><th class="num">Costo</th><th>Responsable</th><th>Observaciones</th></tr></thead>
+              <tbody>
+                <tr *ngFor="let a of aplicacionesVisibles">
+                  <td>{{ a.fecha | date:'dd/MM/yyyy' }}</td><td><strong>{{ a.codigoLote }}</strong></td><td>{{ a.producto }}</td>
+                  <td class="num">{{ a.dosis | number:'1.0-2' }} {{ a.unidadMedida }}</td>
+                  <td class="num">{{ a.costoTotal | currency:'COP':'$':'1.0-0' }}</td>
+                  <td>{{ a.responsable }}</td><td>{{ a.observaciones || '-' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="no-data" *ngIf="!aplicacionesVisibles.length">No hay aplicaciones registradas.</div>
+        </ng-container>
+
+        <ng-container *ngIf="pestana === 'productos'">
+          <div class="table-wrapper" *ngIf="productos.length">
+            <table class="data-table">
+              <thead><tr><th>Producto</th><th>Tipo</th><th>Presentación</th><th>Proveedor</th><th class="num">Costo promedio</th><th>Estado</th><th *ngIf="puedeRegistrar"></th></tr></thead>
+              <tbody>
+                <tr *ngFor="let p of productos">
+                  <td><strong>{{ p.nombre }}</strong></td>
+                  <td><span class="chip" [class.verde]="p.tipo === 'VITAMINA'">{{ p.tipo === 'VITAMINA' ? 'Vitamina' : 'Medicamento' }}</span></td>
+                  <td>{{ p.presentacion }} ({{ p.unidadMedida }})</td><td>{{ p.proveedor }}</td>
+                  <td class="num">{{ p.costoPromedio != null ? (p.costoPromedio | currency:'COP':'$':'1.0-2') + ' / ' + p.unidadMedida : 'Sin compras' }}</td>
+                  <td><span class="chip" [class.gris]="!p.activo">{{ p.activo ? 'Activo' : 'Inactivo' }}</span></td>
+                  <td class="acciones" *ngIf="puedeRegistrar"><p-button icon="pi pi-pencil" [text]="true" ariaLabel="Editar" (onClick)="abrir('producto', p)"></p-button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="no-data" *ngIf="!productos.length">No hay productos registrados.</div>
+        </ng-container>
+
+        <ng-container *ngIf="pestana === 'compras'">
+          <div class="table-wrapper" *ngIf="compras.length">
+            <table class="data-table">
+              <thead><tr><th>Fecha</th><th>Producto</th><th class="num">Cantidad</th><th class="num">Costo por unidad</th><th class="num">Total</th></tr></thead>
+              <tbody>
+                <tr *ngFor="let c of compras">
+                  <td>{{ c.fecha | date:'dd/MM/yyyy' }}</td><td>{{ c.producto }}</td>
+                  <td class="num">{{ c.cantidad | number:'1.0-2' }} {{ c.unidadMedida }}</td>
+                  <td class="num">{{ c.costoUnitario | currency:'COP':'$':'1.0-2' }}</td>
+                  <td class="num">{{ c.total | currency:'COP':'$':'1.0-0' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="no-data" *ngIf="!compras.length">No hay compras registradas.</div>
+        </ng-container>
+      </ng-container>
+    </main>
+  </div>
+</div>

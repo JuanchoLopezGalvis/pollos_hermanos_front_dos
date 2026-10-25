@@ -1,0 +1,99 @@
+.portal {
+  min-height: 100vh;
+  background: var(--ph-fondo);
+}
+
+.barra {
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px clamp(20px, 4vw, 56px);
+  background: var(--ph-verde-900);
+  color: var(--ph-fondo);
+}
+
+.marca {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  font-family: var(--ph-display);
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.marca img {
+  width: 36px;
+  height: 36px;
+}
+
+.usuario {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+}
+
+.usuario > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.salir {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--ph-verde-700);
+  border-radius: 12px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.salir:hover {
+  background: var(--ph-verde-800);
+}
+
+.content {
+  margin: 0 auto;
+}
+
+.aviso {
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: var(--ph-yema-suave);
+}
+
+.ayuda {
+  margin-bottom: 16px;
+}
+
+.subtitulo {
+  margin: 24px 0 12px;
+  font-size: 1.1rem;
+}
+
+td .chip + a {
+  margin-left: 8px;
+  color: var(--ph-verde-700);
+  font-weight: 600;
+}
+
+tr.seleccionada td {
+  background: var(--ph-yema-suave);
+}
+
+@media (max-width: 560px) {
+  .marca span {
+    display: none;
+  }
+}

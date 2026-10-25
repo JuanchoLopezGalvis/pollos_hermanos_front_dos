@@ -17,7 +17,7 @@ describe('Login', () => {
 
   beforeEach(async () => {
     localStorage.clear();
-    auth = jasmine.createSpyObj<AuthService>('AuthService', ['login', 'isLogged']);
+    auth = jasmine.createSpyObj<AuthService>('AuthService', ['login', 'isLogged'], { inicio: '/menu' });
     auth.isLogged.and.returnValue(false);
 
     await TestBed.configureTestingModule({

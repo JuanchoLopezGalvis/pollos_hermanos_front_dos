@@ -6,6 +6,7 @@ import {
   SeguimientoService, SeguimientoCrecimientoDTO, CurvaCrecimientoSemanalDTO, NovedadGalponDTO
 } from '../services/seguimiento.service';
 import { AuthService } from '../services/auth.service';
+import { LoteService, LoteDTO } from '../services/lote.service';
 import { mensajeError } from '../services/error-api';
 
 /** El muestreo es opcional, pero si se llena un campo se deben llenar los dos. */
@@ -17,8 +18,11 @@ function muestreoCompleto(group: AbstractControl): ValidationErrors | null {
 }
 
 /**
- * Seguimiento diario del crecimiento de los lotes (MongoDB).
- * El backend valida en PostgreSQL que el lote exista y esté activo, y calcula su edad.
+ * Seguimiento diario del crecimiento de los lotes (MongoDB): peso, muestreos,
+ * novedades y observaciones. La temperatura y la humedad no se registran porque
+ * las condiciones de la zona son favorables. Un lote puede tener varios
+ * seguimientos el mismo día. El backend valida en PostgreSQL que el lote exista y
+ * esté activo, y calcula su edad.
  */
 @Component({
   selector: 'app-seguimiento',
@@ -29,6 +33,7 @@ function muestreoCompleto(group: AbstractControl): ValidationErrors | null {
 export class Seguimiento implements OnInit {
 
   seguimientos: SeguimientoCrecimientoDTO[] = [];
+  lotesActivos: LoteDTO[] = [];
   curva: CurvaCrecimientoSemanalDTO[] = [];
   loteFiltro = '';
   loteActual = '';
@@ -45,6 +50,7 @@ export class Seguimiento implements OnInit {
   constructor(
     private fb: FormBuilder,
     private seguimientoSvc: SeguimientoService,
+    private loteSvc: LoteService,
     public auth: AuthService,
     private messages: MessageService,
     private confirm: ConfirmationService
@@ -68,6 +74,10 @@ export class Seguimiento implements OnInit {
   }
 
   ngOnInit(): void {
+    this.loteSvc.obtenerTodos().subscribe({
+      next: (l) => this.lotesActivos = (l ?? []).filter(x => x.estado === 'EN_ENGORDE' || x.estado === 'LISTO_PARA_VENTA'),
+      error: () => this.lotesActivos = []
+    });
     this.cargar();
   }
 
@@ -76,8 +86,6 @@ export class Seguimiento implements OnInit {
       codigoLote: ['', [Validators.required, Validators.maxLength(30)]],
       fecha: [this.hoy],
       pesoPromedioGramos: [null, [Validators.min(0.01)]],
-      temperaturaCelsius: [null, [Validators.min(-10), Validators.max(60)]],
-      humedadRelativa: [null, [Validators.min(0), Validators.max(100)]],
       observaciones: ['', [Validators.maxLength(1000)]],
       muestreo: this.fb.group({
         avesPesadas: [null, [Validators.min(1), Validators.pattern(/^\d+$/)]],
@@ -153,8 +161,6 @@ export class Seguimiento implements OnInit {
       codigoLote: s.codigoLote,
       fecha: s.fecha,
       pesoPromedioGramos: s.pesoPromedioGramos ?? null,
-      temperaturaCelsius: s.temperaturaCelsius ?? null,
-      humedadRelativa: s.humedadRelativa ?? null,
       observaciones: s.observaciones ?? '',
       muestreo: {
         avesPesadas: s.muestreo?.avesPesadas ?? null,
@@ -213,8 +219,6 @@ export class Seguimiento implements OnInit {
     const dto: SeguimientoCrecimientoDTO = { codigoLote: String(v.codigoLote).trim() };
     if (!this.editandoId && v.fecha) dto.fecha = v.fecha;
     dto.pesoPromedioGramos = numero(v.pesoPromedioGramos);
-    dto.temperaturaCelsius = numero(v.temperaturaCelsius);
-    dto.humedadRelativa = numero(v.humedadRelativa);
     if (v.observaciones?.trim()) dto.observaciones = v.observaciones.trim();
 
     const aves = numero(v.muestreo.avesPesadas);

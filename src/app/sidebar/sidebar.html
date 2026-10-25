@@ -7,21 +7,19 @@
   <nav class="menu" aria-label="Menú principal">
     <ul>
       <li routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-        <a routerLink="/menu"><i class="pi pi-th-large" aria-hidden="true"></i><span>Inicio</span></a>
-      </li>
-      <li routerLinkActive="active" *ngIf="auth.tieneAlguno(['seguimiento.ver', 'seguimiento.registrar'])">
-        <a routerLink="/seguimiento"><i class="pi pi-chart-bar" aria-hidden="true"></i><span>Seguimiento</span></a>
-      </li>
-      <li routerLinkActive="active" *ngIf="auth.tienePermiso('usuario.gestionar')">
-        <a routerLink="/usuarios"><i class="pi pi-users" aria-hidden="true"></i><span>Usuarios</span></a>
-      </li>
-      <li routerLinkActive="active" *ngIf="auth.tienePermiso('rol.gestionar')">
-        <a routerLink="/roles"><i class="pi pi-id-card" aria-hidden="true"></i><span>Roles</span></a>
-      </li>
-      <li routerLinkActive="active" *ngIf="auth.tieneAlguno(['rol.gestionar', 'usuario.gestionar'])">
-        <a routerLink="/permisos"><i class="pi pi-key" aria-hidden="true"></i><span>Permisos</span></a>
+        <a routerLink="/menu"><i class="pi pi-compass" aria-hidden="true"></i><span>Inicio</span></a>
       </li>
     </ul>
+    <ng-container *ngFor="let s of secciones">
+      <ng-container *ngIf="visibles(s).length">
+        <h4 class="seccion">{{ s.titulo }}</h4>
+        <ul>
+          <li routerLinkActive="active" *ngFor="let m of visibles(s)">
+            <a [routerLink]="m.ruta"><i [class]="m.icono" aria-hidden="true"></i><span>{{ m.titulo }}</span></a>
+          </li>
+        </ul>
+      </ng-container>
+    </ng-container>
   </nav>
 
   <div class="profile">

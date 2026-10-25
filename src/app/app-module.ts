@@ -12,6 +12,21 @@ import { Seguimiento } from './seguimiento/seguimiento';
 import { Usuarios } from './usuarios/usuarios';
 import { Roles } from './roles/roles';
 import { Permisos } from './permisos/permisos';
+import { Galpones } from './galpones/galpones';
+import { Lotes } from './lotes/lotes';
+import { Panel } from './panel/panel';
+import { Personal } from './personal/personal';
+import { Proveedores } from './proveedores/proveedores';
+import { Alimentacion } from './alimentacion/alimentacion';
+import { Sanidad } from './sanidad/sanidad';
+import { Gastos } from './gastos/gastos';
+import { Balance } from './balance/balance';
+import { Clientes } from './clientes/clientes';
+import { Pedidos } from './pedidos/pedidos';
+import { Ventas } from './ventas/ventas';
+import { PagoResultado } from './pago-resultado/pago-resultado';
+import { Registro } from './registro/registro';
+import { Portal } from './portal/portal';
 
 import { providePrimeNG } from 'primeng/config';
 import { TemaPollos } from './tema';
@@ -34,7 +49,22 @@ import { TokenInterceptor } from './services/token.interceptor';
     Seguimiento,
     Usuarios,
     Roles,
-    Permisos
+    Permisos,
+    Galpones,
+    Lotes,
+    Panel,
+    Personal,
+    Proveedores,
+    Alimentacion,
+    Sanidad,
+    Gastos,
+    Balance,
+    Clientes,
+    Pedidos,
+    Ventas,
+    PagoResultado,
+    Registro,
+    Portal
   ],
   imports: [
     BrowserModule,
