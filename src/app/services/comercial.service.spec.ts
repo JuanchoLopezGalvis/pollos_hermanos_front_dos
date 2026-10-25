@@ -31,12 +31,9 @@ describe('ComercialService', () => {
     expect(venta.request.body.pesoTotalLibras).toBe(576);
   });
 
-  it('inicia y confirma el pago en línea', () => {
-    service.iniciarPagoEnLinea(7, 1000, 'http://localhost/pago-resultado').subscribe();
-    const iniciar = http.expectOne(`${api}/pagos-en-linea/ventas/7`);
-    expect(iniciar.request.body).toEqual({ monto: 1000, urlRetorno: 'http://localhost/pago-resultado' });
-
-    service.confirmarPagoEnLinea('tx-1').subscribe();
-    expect(http.expectOne(`${api}/pagos-en-linea/confirmar`).request.body).toEqual({ idTransaccion: 'tx-1' });
+  it('programa la entrega sin dirección: la base usa la del cliente', () => {
+    service.programarEntrega(7, { idEmpleado: 3 }).subscribe();
+    const req = http.expectOne(`${api}/ventas/7/entrega`);
+    expect(req.request.body).toEqual({ idEmpleado: 3 });
   });
 });

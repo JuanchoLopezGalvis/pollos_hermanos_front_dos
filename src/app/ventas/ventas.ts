@@ -36,10 +36,7 @@ export class Ventas implements OnInit {
 
   seleccionada: VentaDTO | null = null;
   pagos: PagoDTO[] = [];
-  formPago: FormGroup;
   formEntrega: FormGroup;
-  montoEnLinea: number | null = null;
-  redirigiendo = false;
 
   readonly hoy = hoyISO();
   readonly estadosVenta: Record<string, string> = { PENDIENTE_PAGO: 'Pendiente de pago', PAGADA: 'Pagada', VENCIDA: 'Vencida' };
@@ -52,19 +49,12 @@ export class Ventas implements OnInit {
     private messages: MessageService,
     private route: ActivatedRoute
   ) {
-    this.formPago = this.fb.group({
-      codigoMetodo: ['EFECTIVO', Validators.required],
-      fecha: [this.hoy, Validators.required],
-      monto: [null, [Validators.required, Validators.min(1)]]
-    });
     this.formEntrega = this.fb.group({
       idEmpleado: [null, Validators.required],
-      direccion: ['', Validators.maxLength(200)],
       observaciones: ['', Validators.maxLength(300)]
     });
   }
 
-  get puedePagar(): boolean { return this.auth.tienePermiso('pago.registrar'); }
   get puedeGestionar(): boolean { return this.auth.tienePermiso('venta.gestionar'); }
   get puedeCartera(): boolean { return this.auth.tieneAlguno(['cartera.ver', 'pago.registrar']); }
 
@@ -103,41 +93,8 @@ export class Ventas implements OnInit {
 
   seleccionar(v: VentaDTO): void {
     this.seleccionada = v;
-    this.formPago.reset({ codigoMetodo: 'EFECTIVO', fecha: this.hoy, monto: Number(v.saldo) || null });
-    this.formEntrega.reset({ idEmpleado: null, direccion: '', observaciones: '' });
-    this.montoEnLinea = Number(v.saldo) || null;
+    this.formEntrega.reset({ idEmpleado: null, observaciones: '' });
     this.comercialSvc.pagos(v.idVenta).subscribe({ next: p => this.pagos = p ?? [], error: () => this.pagos = [] });
-  }
-
-  registrarPago(): void {
-    if (!this.seleccionada || this.formPago.invalid) {
-      this.formPago.markAllAsTouched();
-      return;
-    }
-    const v = this.formPago.value;
-    this.guardando = true;
-    this.comercialSvc.registrarPago(this.seleccionada.idVenta, { ...v, monto: Number(v.monto) })
-      .pipe(finalize(() => this.guardando = false)).subscribe({
-        next: (venta) => {
-          this.messages.add({ severity: 'success', summary: 'Pago registrado', detail: `Saldo pendiente: ${venta.saldo}` });
-          this.cargar(venta.idVenta);
-        },
-        error: (err) => this.messages.add({ severity: 'error', summary: 'No se registró el pago', detail: mensajeError(err), life: 8000 })
-      });
-  }
-
-  /** Abre el checkout de la pasarela de pruebas; al terminar vuelve a /pago-resultado. */
-  pagarEnLinea(): void {
-    if (!this.seleccionada || !this.montoEnLinea || this.montoEnLinea <= 0) return;
-    this.redirigiendo = true;
-    const retorno = `${window.location.origin}/pago-resultado`;
-    this.comercialSvc.iniciarPagoEnLinea(this.seleccionada.idVenta, Number(this.montoEnLinea), retorno).subscribe({
-      next: (checkout) => window.location.assign(checkout.urlCheckout),
-      error: (err) => {
-        this.redirigiendo = false;
-        this.messages.add({ severity: 'error', summary: 'No se pudo iniciar el pago en línea', detail: mensajeError(err), life: 8000 });
-      }
-    });
   }
 
   programarEntrega(): void {
@@ -148,7 +105,7 @@ export class Ventas implements OnInit {
     const v = this.formEntrega.value;
     this.guardando = true;
     this.comercialSvc.programarEntrega(this.seleccionada.idVenta, {
-      idEmpleado: v.idEmpleado, direccion: v.direccion?.trim() || null, observaciones: v.observaciones?.trim() || null
+      idEmpleado: v.idEmpleado, observaciones: v.observaciones?.trim() || null
     }).pipe(finalize(() => this.guardando = false)).subscribe({
       next: (e) => {
         this.messages.add({ severity: 'success', summary: 'Entrega programada', detail: `${e.transportista} → ${e.direccion}` });

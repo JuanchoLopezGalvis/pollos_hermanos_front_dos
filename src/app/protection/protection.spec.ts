@@ -10,11 +10,13 @@ describe('Protection', () => {
   let auth: jasmine.SpyObj<AuthService>;
   let router: Router;
 
-  const ruta = (permisos?: string[]) => ({ data: permisos ? { permisos } : {} }) as unknown as ActivatedRouteSnapshot;
+  const ruta = (permisos?: string[], portal = false) =>
+    ({ data: { ...(permisos ? { permisos } : {}), ...(portal ? { portal } : {}) } }) as unknown as ActivatedRouteSnapshot;
+  const propiedades = { esCliente: false, inicio: '/menu' };
   const estado = (url: string) => ({ url }) as RouterStateSnapshot;
 
   beforeEach(() => {
-    auth = jasmine.createSpyObj<AuthService>('AuthService', ['isLogged', 'tieneAlguno']);
+    auth = jasmine.createSpyObj<AuthService>('AuthService', ['isLogged', 'tieneAlguno'], propiedades);
     TestBed.configureTestingModule({
       imports: [RouterTestingModule],
       providers: [{ provide: AuthService, useValue: auth }]
@@ -40,5 +42,20 @@ describe('Protection', () => {
     auth.isLogged.and.returnValue(true);
     auth.tieneAlguno.and.returnValue(true);
     expect(guard.canActivate(ruta(['usuario.gestionar']), estado('/usuarios'))).toBeTrue();
+  });
+
+  it('manda al portal a un cliente que intenta entrar a una pantalla del personal', () => {
+    auth.isLogged.and.returnValue(true);
+    auth.tieneAlguno.and.returnValue(true);
+    (Object.getOwnPropertyDescriptor(auth, 'esCliente')!.get as jasmine.Spy).and.returnValue(true);
+    const res = guard.canActivate(ruta(), estado('/menu')) as UrlTree;
+    expect(router.serializeUrl(res)).toBe('/portal');
+  });
+
+  it('deja entrar a un cliente a las pantallas del portal', () => {
+    auth.isLogged.and.returnValue(true);
+    auth.tieneAlguno.and.returnValue(true);
+    (Object.getOwnPropertyDescriptor(auth, 'esCliente')!.get as jasmine.Spy).and.returnValue(true);
+    expect(guard.canActivate(ruta(['portal.cliente'], true), estado('/portal'))).toBeTrue();
   });
 });

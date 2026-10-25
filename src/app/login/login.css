@@ -240,6 +240,16 @@ form {
   margin-top: 3px;
 }
 
+.registro {
+  text-align: center;
+  color: var(--ph-texto-suave);
+}
+
+.registro a {
+  color: var(--ph-verde-700);
+  font-weight: 700;
+}
+
 .copyright {
   font-size: 0.8rem;
   color: var(--ph-texto-suave);

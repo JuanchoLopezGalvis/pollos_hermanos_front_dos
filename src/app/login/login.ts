@@ -34,7 +34,7 @@ export class Login {
     });
 
     if (this.auth.isLogged()) {
-      this.router.navigate(['/menu']);
+      this.router.navigate([this.auth.inicio]);
     }
   }
 
@@ -68,7 +68,7 @@ export class Login {
       .subscribe({
         next: () => {
           const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
-          this.router.navigateByUrl(returnUrl || '/menu');
+          this.router.navigateByUrl(returnUrl || this.auth.inicio);
         },
         error: (err) => {
           this.errorMsg = mensajeError(err, 'No se pudo iniciar sesión. Inténtalo de nuevo.');

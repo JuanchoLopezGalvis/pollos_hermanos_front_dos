@@ -1,0 +1,100 @@
+<div class="login-page">
+  <section class="presentacion">
+    <div class="sol" aria-hidden="true"></div>
+    <div class="anillo" aria-hidden="true"></div>
+
+    <div class="marca">
+      <img src="logo.svg" alt="" class="marca-logo" />
+      <div>
+        <span class="marca-nombre">Los Pollos Hermanos</span>
+        <span class="marca-sub">Pollo de engorde directo de la finca</span>
+      </div>
+    </div>
+
+    <div class="lema animate__animated animate__fadeInUp">
+      <h1>Pide tus pollos y págalos en línea.</h1>
+      <p>Dinos cuántas aves necesitas y para qué fecha. La finca aprueba tu pedido, lo pesa y te muestra el valor para que lo pagues aquí mismo.</p>
+    </div>
+
+    <ol class="pasos">
+      <li><strong>1</strong><span>Haces tu pedido</span></li>
+      <li><strong>2</strong><span>La finca lo aprueba y lo pesa</span></li>
+      <li><strong>3</strong><span>Pagas con Wompi</span></li>
+    </ol>
+  </section>
+
+  <section class="acceso">
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate class="registro-form animate__animated animate__fadeIn">
+      <div class="titulo">
+        <h2>Crea tu cuenta</h2>
+        <p>Es solo para clientes: con ella haces pedidos y los pagas.</p>
+      </div>
+
+      <div class="campos">
+        <div class="field">
+          <label for="tipo">Tipo de cliente *</label>
+          <select id="tipo" pInputText formControlName="idTipoCliente">
+            <option [ngValue]="null" disabled>Selecciona</option>
+            <option *ngFor="let t of tipos" [ngValue]="t.id">{{ t.nombre }}</option>
+          </select>
+          <small class="err" *ngIf="invalido('idTipoCliente')">Elige el tipo de cliente.</small>
+        </div>
+        <div class="field">
+          <label for="documento">Documento o NIT *</label>
+          <input id="documento" pInputText formControlName="documento" maxlength="20" />
+          <small class="err" *ngIf="invalido('documento')">El documento es obligatorio.</small>
+        </div>
+        <div class="field ancho">
+          <label for="nombre">Nombre o razón social *</label>
+          <input id="nombre" pInputText formControlName="nombre" maxlength="120" autocomplete="name" />
+          <small class="err" *ngIf="invalido('nombre')">El nombre es obligatorio.</small>
+        </div>
+        <div class="field">
+          <label for="correo">Correo *</label>
+          <input id="correo" pInputText type="email" formControlName="correo" maxlength="120" autocomplete="email" />
+          <small class="err" *ngIf="invalido('correo')">Escribe un correo válido.</small>
+        </div>
+        <div class="field">
+          <label for="telefono">Teléfono</label>
+          <input id="telefono" pInputText formControlName="telefono" maxlength="20" autocomplete="tel" />
+        </div>
+        <div class="field ancho">
+          <label for="direccion">Dirección de entrega *</label>
+          <input id="direccion" pInputText formControlName="direccion" maxlength="200" autocomplete="street-address" />
+          <small class="err" *ngIf="invalido('direccion')">La dirección es obligatoria.</small>
+        </div>
+        <div class="field ancho">
+          <label for="usuario">Nombre de usuario *</label>
+          <input id="usuario" pInputText formControlName="nombreUsuario" maxlength="50" autocomplete="username" />
+          <small class="err" *ngIf="invalido('nombreUsuario')">De 3 a 50 caracteres: letras, números, punto, guion o guion bajo.</small>
+        </div>
+        <div class="field">
+          <label for="contrasena">Contraseña *</label>
+          <p-password inputId="contrasena" formControlName="contrasena" [toggleMask]="true" [feedback]="false"
+                      styleClass="clave" autocomplete="new-password"></p-password>
+          <small class="err" *ngIf="invalido('contrasena')">Mínimo 8 caracteres.</small>
+        </div>
+        <div class="field">
+          <label for="confirmacion">Repite la contraseña *</label>
+          <p-password inputId="confirmacion" formControlName="confirmacion" [toggleMask]="true" [feedback]="false"
+                      styleClass="clave" autocomplete="new-password"></p-password>
+          <small class="err" *ngIf="form.errors?.['clavesDistintas'] && f['confirmacion'].touched">Las contraseñas no coinciden.</small>
+        </div>
+      </div>
+
+      <p-button type="submit" styleClass="btn-entrar" [label]="loading ? 'Creando cuenta...' : 'Crear cuenta'"
+                icon="pi pi-arrow-right" iconPos="right" [loading]="loading" [disabled]="loading"></p-button>
+
+      <p class="mensaje" role="alert" *ngIf="errorMsg">
+        <i class="pi pi-exclamation-circle" aria-hidden="true"></i>
+        {{ errorMsg }}
+      </p>
+
+      <p class="registro">¿Ya tienes cuenta? <a routerLink="/login">Inicia sesión</a></p>
+    </form>
+
+    <span class="copyright">
+      &copy; {{ anio }} Los Pollos Hermanos · Universidad El Bosque · Bases de Datos 2
+    </span>
+  </section>
+</div>

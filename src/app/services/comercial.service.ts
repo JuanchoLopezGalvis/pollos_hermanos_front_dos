@@ -13,6 +13,16 @@ export interface ClienteDTO {
   telefono?: string | null;
   correo?: string | null;
   activo: boolean;
+  /** Usuario con el que entra al portal; vacío si no tiene cuenta. */
+  idUsuario?: number | null;
+  usuario?: string | null;
+}
+
+/** Cuenta del portal que el personal crea para un cliente registrado. */
+export interface CuentaClienteDTO {
+  nombreUsuario: string;
+  contrasena: string;
+  correo?: string | null;
 }
 
 export interface RegistroClienteDTO {
@@ -36,7 +46,8 @@ export interface PedidoDTO {
   estado: EstadoPedido;
   observaciones?: string | null;
   totalAves: number;
-  lotes: string;
+  /** Lotes de los que salen las aves; el portal del cliente no los recibe. */
+  lotes?: string | null;
   idVenta?: number | null;
 }
 
@@ -62,6 +73,8 @@ export interface VentaDTO {
   vencida: boolean;
   idEntrega?: number | null;
   estadoEntrega?: string | null;
+  /** Dirección registrada por el cliente: ahí se entrega. */
+  direccionCliente?: string | null;
 }
 
 export interface PagoDTO {
@@ -137,6 +150,10 @@ export class ComercialService {
     return this.http.post<ClienteDTO>(`${this.api}/clientes`, dto);
   }
 
+  crearCuentaCliente(id: number, dto: CuentaClienteDTO): Observable<ClienteDTO> {
+    return this.http.post<ClienteDTO>(`${this.api}/clientes/${id}/cuenta`, dto);
+  }
+
   actualizarCliente(id: number, dto: RegistroClienteDTO): Observable<ClienteDTO> {
     return this.http.put<ClienteDTO>(`${this.api}/clientes/${id}`, dto);
   }
@@ -172,16 +189,12 @@ export class ComercialService {
     return this.http.get<PagoDTO[]>(`${this.api}/ventas/${idVenta}/pagos`);
   }
 
-  registrarPago(idVenta: number, dto: { codigoMetodo: string; fecha?: string | null; monto: number }): Observable<VentaDTO> {
-    return this.http.post<VentaDTO>(`${this.api}/ventas/${idVenta}/pagos`, dto);
-  }
-
   entregas(): Observable<EntregaDTO[]> {
     return this.http.get<EntregaDTO[]>(`${this.api}/entregas`);
   }
 
-  programarEntrega(idVenta: number, dto: { idEmpleado: number; direccion?: string | null;
-                                           observaciones?: string | null }): Observable<EntregaDTO> {
+  /** La dirección no se envía: es siempre la del cliente. */
+  programarEntrega(idVenta: number, dto: { idEmpleado: number; observaciones?: string | null }): Observable<EntregaDTO> {
     return this.http.post<EntregaDTO>(`${this.api}/ventas/${idVenta}/entrega`, dto);
   }
 
@@ -200,13 +213,5 @@ export class ComercialService {
 
   ventasPorCliente(): Observable<VentasClienteDTO[]> {
     return this.http.get<VentasClienteDTO[]>(`${this.api}/reportes/ventas-por-cliente`);
-  }
-
-  iniciarPagoEnLinea(idVenta: number, monto: number, urlRetorno: string): Observable<CheckoutPagoDTO> {
-    return this.http.post<CheckoutPagoDTO>(`${this.api}/pagos-en-linea/ventas/${idVenta}`, { monto, urlRetorno });
-  }
-
-  confirmarPagoEnLinea(idTransaccion: string): Observable<ResultadoPagoEnLineaDTO> {
-    return this.http.post<ResultadoPagoEnLineaDTO>(`${this.api}/pagos-en-linea/confirmar`, { idTransaccion });
   }
 }

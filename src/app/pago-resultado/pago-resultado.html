@@ -1,6 +1,5 @@
 <div class="body-wrapper">
   <div class="glass-container">
-    <app-sidebar></app-sidebar>
 
     <main class="content">
       <header>
@@ -10,6 +9,9 @@
 
       <div *ngIf="cargando" class="loading">Consultando la transacción {{ idTransaccion }}...</div>
       <div *ngIf="!cargando && errorMsg" class="error">{{ errorMsg }}</div>
+      <a *ngIf="!cargando && errorMsg" routerLink="/portal" [queryParams]="{ ver: 'compras' }">
+        <p-button label="Volver a mis compras" icon="pi pi-arrow-left" severity="secondary" [outlined]="true"></p-button>
+      </a>
 
       <section class="card" *ngIf="!cargando && resultado">
         <div class="encabezado-detalle">
@@ -25,8 +27,8 @@
         </dl>
         <div class="form-actions">
           <p-button *ngIf="resultado.estadoTransaccion === 'PENDING'" label="Volver a consultar" icon="pi pi-refresh" severity="secondary" [outlined]="true" (onClick)="confirmar()"></p-button>
-          <a *ngIf="resultado.idVenta" routerLink="/ventas" [queryParams]="{ venta: resultado.idVenta }">
-            <p-button label="Ver la venta" icon="pi pi-arrow-right"></p-button>
+          <a routerLink="/portal" [queryParams]="{ ver: 'compras' }">
+            <p-button label="Volver a mis compras" icon="pi pi-arrow-right"></p-button>
           </a>
         </div>
       </section>

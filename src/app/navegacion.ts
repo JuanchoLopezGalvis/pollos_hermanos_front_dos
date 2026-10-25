@@ -53,7 +53,7 @@ export const SECCIONES: SeccionApp[] = [
         icono: 'pi pi-id-card', ruta: '/clientes', permisos: ['cliente.gestionar', 'pedido.gestionar'] },
       { titulo: 'Pedidos', descripcion: 'Pedidos con aves de uno o varios lotes listos para venta.',
         icono: 'pi pi-shopping-cart', ruta: '/pedidos', permisos: ['pedido.gestionar', 'venta.gestionar'] },
-      { titulo: 'Ventas y cartera', descripcion: 'Ventas en libras, pagos parciales y en línea, entregas y cartera vencida.',
+      { titulo: 'Ventas y cartera', descripcion: 'Ventas en libras, pagos de los clientes con Wompi, entregas y cartera vencida.',
         icono: 'pi pi-wallet', ruta: '/ventas', permisos: ['venta.gestionar', 'pago.registrar', 'cartera.ver'] }
     ]
   },

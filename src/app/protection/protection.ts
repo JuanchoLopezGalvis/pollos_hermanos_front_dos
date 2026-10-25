@@ -19,9 +19,14 @@ export class Protection implements CanActivate {
       return this.router.parseUrl(`/login?returnUrl=${encodeURIComponent(targetUrl)}`);
     }
 
+    // Un cliente solo entra a las pantallas marcadas como del portal.
+    if (this.auth.esCliente && !route.data?.['portal']) {
+      return this.router.parseUrl('/portal');
+    }
+
     const permisos = route.data?.['permisos'] as string[] | undefined;
     if (permisos?.length && !this.auth.tieneAlguno(permisos)) {
-      return this.router.parseUrl('/menu');
+      return this.router.parseUrl(this.auth.inicio);
     }
 
     return true;

@@ -31,6 +31,11 @@ export class Clientes implements OnInit {
   editando: ClienteDTO | null = null;
   form: FormGroup;
 
+  /** Cliente al que se le está creando la cuenta del portal. */
+  conCuentaNueva: ClienteDTO | null = null;
+  formCuenta: FormGroup;
+  creandoCuenta = false;
+
   constructor(
     private fb: FormBuilder,
     private comercialSvc: ComercialService,
@@ -39,6 +44,7 @@ export class Clientes implements OnInit {
     private messages: MessageService
   ) {
     this.form = this.crearFormulario();
+    this.formCuenta = this.crearFormularioCuenta();
   }
 
   get puedeGestionar(): boolean {
@@ -69,6 +75,14 @@ export class Clientes implements OnInit {
     }, { validators: conContacto });
   }
 
+  private crearFormularioCuenta(correo: string | null = null): FormGroup {
+    return this.fb.group({
+      nombreUsuario: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(50), Validators.pattern(/^[A-Za-z0-9._-]+$/)]],
+      contrasena: ['', [Validators.required, Validators.minLength(8), Validators.maxLength(72)]],
+      correo: [correo ?? '', [Validators.required, Validators.email, Validators.maxLength(120)]]
+    });
+  }
+
   cargar(): void {
     this.loading = true;
     this.errorMsg = '';
@@ -79,12 +93,14 @@ export class Clientes implements OnInit {
   }
 
   nuevo(): void {
+    this.conCuentaNueva = null;
     this.editando = null;
     this.form = this.crearFormulario();
     this.mostrarFormulario = true;
   }
 
   editar(c: ClienteDTO): void {
+    this.conCuentaNueva = null;
     this.editando = c;
     this.form = this.crearFormulario();
     this.form.patchValue({ ...c, direccion: c.direccion ?? '', telefono: c.telefono ?? '', correo: c.correo ?? '' });
@@ -115,6 +131,41 @@ export class Clientes implements OnInit {
         this.cargar();
       },
       error: (err) => this.messages.add({ severity: 'error', summary: 'No se guardó', detail: mensajeError(err), life: 6000 })
+    });
+  }
+
+  /** Abre el formulario para crear la cuenta del portal de un cliente ya registrado (D25). */
+  nuevaCuenta(c: ClienteDTO): void {
+    this.cancelar();
+    this.conCuentaNueva = c;
+    this.formCuenta = this.crearFormularioCuenta(c.correo ?? null);
+  }
+
+  cancelarCuenta(): void {
+    this.conCuentaNueva = null;
+  }
+
+  crearCuenta(): void {
+    const c = this.conCuentaNueva;
+    if (!c) return;
+    if (this.formCuenta.invalid) {
+      this.formCuenta.markAllAsTouched();
+      return;
+    }
+    const v = this.formCuenta.value;
+    this.creandoCuenta = true;
+    this.comercialSvc.crearCuentaCliente(c.idCliente, {
+      nombreUsuario: v.nombreUsuario.trim(), contrasena: v.contrasena, correo: v.correo.trim()
+    }).pipe(finalize(() => this.creandoCuenta = false)).subscribe({
+      next: (res) => {
+        this.messages.add({
+          severity: 'success', summary: 'Cuenta creada',
+          detail: `${res.nombre} ya puede entrar al portal con el usuario ${res.usuario}.`, life: 6000
+        });
+        this.conCuentaNueva = null;
+        this.cargar();
+      },
+      error: (err) => this.messages.add({ severity: 'error', summary: 'No se creó la cuenta', detail: mensajeError(err), life: 6000 })
     });
   }
 }

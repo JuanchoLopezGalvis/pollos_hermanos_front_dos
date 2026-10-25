@@ -14,14 +14,14 @@ import { AuthService } from '../services/auth.service';
 describe('Ventas', () => {
   const venta: VentaDTO = { idVenta: 7, idPedido: 5, idCliente: 1, cliente: 'Asadero', fechaVenta: '2026-10-20', cantidadAves: 96,
     pesoTotalLibras: 576, precioLibra: 9000, valorTotal: 5184000, pagado: 2000000, saldo: 3184000, fechaLimitePago: '2026-11-19',
-    estado: 'PENDIENTE_PAGO', vencida: false };
+    estado: 'PENDIENTE_PAGO', vencida: false, direccionCliente: 'Calle 1 # 2-3' };
   let component: Ventas;
   let comercial: jasmine.SpyObj<ComercialService>;
   let messages: jasmine.SpyObj<MessageService>;
 
   beforeEach(async () => {
     comercial = jasmine.createSpyObj<ComercialService>('ComercialService',
-      ['ventas', 'entregas', 'carteraVencida', 'ventasPorCliente', 'pagos', 'registrarPago', 'iniciarPagoEnLinea']);
+      ['ventas', 'entregas', 'carteraVencida', 'ventasPorCliente', 'pagos', 'programarEntrega']);
     comercial.ventas.and.returnValue(of([venta]));
     comercial.entregas.and.returnValue(of([]));
     comercial.carteraVencida.and.returnValue(of([]));
@@ -48,20 +48,19 @@ describe('Ventas', () => {
     fixture.detectChanges();
   });
 
-  it('al elegir una venta propone pagar el saldo pendiente', () => {
+  it('el personal no registra pagos: no hay formulario de pago', () => {
     component.seleccionar(venta);
-    expect(component.formPago.value.monto).toBe(3184000);
-    expect(component.montoEnLinea).toBe(3184000);
+    expect((component as any).formPago).toBeUndefined();
+    expect((component as any).registrarPago).toBeUndefined();
   });
 
-  it('pide el checkout con la página de retorno y muestra el error si la pasarela no está configurada', () => {
-    comercial.iniciarPagoEnLinea.and.returnValue(throwError(() => new HttpErrorResponse({
-      status: 409, error: { mensaje: 'La pasarela de pagos no está configurada.' }
-    })));
+  it('programa la entrega sin dirección: la pone la base con la del cliente', () => {
+    comercial.programarEntrega.and.returnValue(of({ idEntrega: 1, idVenta: 7, cliente: 'Asadero', idEmpleado: 3,
+      transportista: 'Tomás Ruta', direccion: 'Calle 1 # 2-3', estado: 'PENDIENTE' } as any));
     component.seleccionar(venta);
-    component.pagarEnLinea();
+    component.formEntrega.patchValue({ idEmpleado: 3 });
+    component.programarEntrega();
 
-    expect(comercial.iniciarPagoEnLinea).toHaveBeenCalledWith(7, 3184000, `${window.location.origin}/pago-resultado`);
-    expect(messages.add).toHaveBeenCalledWith(jasmine.objectContaining({ detail: 'La pasarela de pagos no está configurada.' }));
+    expect(comercial.programarEntrega).toHaveBeenCalledWith(7, { idEmpleado: 3, observaciones: null });
   });
 });

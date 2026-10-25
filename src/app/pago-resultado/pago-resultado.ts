@@ -1,7 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { finalize } from 'rxjs/operators';
-import { ComercialService, ResultadoPagoEnLineaDTO } from '../services/comercial.service';
+import { ResultadoPagoEnLineaDTO } from '../services/comercial.service';
+import { PortalService } from '../services/portal.service';
+import { AuthService } from '../services/auth.service';
 import { mensajeError } from '../services/error-api';
 
 /**
@@ -20,7 +22,11 @@ export class PagoResultado implements OnInit {
   errorMsg = '';
   idTransaccion = '';
 
-  constructor(private route: ActivatedRoute, private comercialSvc: ComercialService) {}
+  constructor(
+    private route: ActivatedRoute,
+    private portalSvc: PortalService,
+    public auth: AuthService
+  ) {}
 
   ngOnInit(): void {
     this.idTransaccion = this.route.snapshot.queryParamMap.get('id') ?? '';
@@ -35,7 +41,8 @@ export class PagoResultado implements OnInit {
   confirmar(): void {
     this.cargando = true;
     this.errorMsg = '';
-    this.comercialSvc.confirmarPagoEnLinea(this.idTransaccion).pipe(finalize(() => this.cargando = false)).subscribe({
+    // Solo el cliente paga; el portal solo acepta pagos de sus propias compras.
+    this.portalSvc.confirmarPago(this.idTransaccion).pipe(finalize(() => this.cargando = false)).subscribe({
       next: (r) => this.resultado = r,
       error: (err) => this.errorMsg = mensajeError(err, 'No se pudo confirmar el pago.')
     });

@@ -54,4 +54,27 @@ describe('AuthService', () => {
     expect(service.isLogged()).toBeFalse();
     expect(service.user).toBeNull();
   });
+
+  it('registra al cliente y deja abierta su sesión en el portal', () => {
+    service.registrar({
+      idTipoCliente: 1, documento: '900', nombre: 'Asadero', direccion: 'Calle 1', correo: 'a@b.co',
+      nombreUsuario: 'asadero', contrasena: 'Clave1234'
+    }).subscribe();
+
+    const req = http.expectOne(`${environment.api}/auth/registro`);
+    expect(req.request.method).toBe('POST');
+    req.flush({ ...respuesta, nombreUsuario: 'asadero', permisos: ['portal.cliente'] });
+
+    expect(service.esCliente).toBeTrue();
+    expect(service.inicio).toBe('/portal');
+  });
+
+  it('el personal y el superusuario no son clientes aunque tengan el permiso del portal', () => {
+    service.saveSession({ ...respuesta, permisos: ['seguimiento.ver'] });
+    expect(service.esCliente).toBeFalse();
+    expect(service.inicio).toBe('/menu');
+
+    service.saveSession({ ...respuesta, superusuario: true, permisos: ['portal.cliente'] });
+    expect(service.esCliente).toBeFalse();
+  });
 });

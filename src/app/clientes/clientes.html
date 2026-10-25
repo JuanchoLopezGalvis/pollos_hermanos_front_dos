@@ -5,7 +5,7 @@
     <main class="content">
       <header>
         <h1>Clientes</h1>
-        <p>Tiendas, restaurantes y personas naturales. Cada cliente tiene teléfono o correo de contacto único.</p>
+        <p>Tiendas, restaurantes y personas naturales. Cada cliente tiene teléfono o correo de contacto único. Con una cuenta, el cliente hace sus pedidos y los paga desde el portal.</p>
       </header>
 
       <div class="toolbar">
@@ -59,16 +59,51 @@
         </form>
       </section>
 
+      <section class="card animate__animated animate__fadeIn" *ngIf="conCuentaNueva">
+        <h2>Cuenta del portal para {{ conCuentaNueva.nombre }}</h2>
+        <p class="ayuda">La cuenta solo entra al portal de clientes: hace pedidos y los paga. Entrega al cliente su usuario y su contraseña inicial.</p>
+        <form [formGroup]="formCuenta" (ngSubmit)="crearCuenta()" novalidate>
+          <div class="form-grid">
+            <div class="field">
+              <label for="cuenta-usuario">Nombre de usuario *</label>
+              <input id="cuenta-usuario" pInputText formControlName="nombreUsuario" maxlength="50" autocomplete="off" />
+              <small class="err" *ngIf="formCuenta.controls['nombreUsuario'].invalid && formCuenta.controls['nombreUsuario'].touched">De 3 a 50 caracteres: letras, números, punto, guion o guion bajo.</small>
+            </div>
+            <div class="field">
+              <label for="cuenta-clave">Contraseña inicial *</label>
+              <input id="cuenta-clave" pInputText type="password" formControlName="contrasena" maxlength="72" autocomplete="new-password" />
+              <small class="err" *ngIf="formCuenta.controls['contrasena'].invalid && formCuenta.controls['contrasena'].touched">Mínimo 8 caracteres.</small>
+            </div>
+            <div class="field">
+              <label for="cuenta-correo">Correo de la cuenta *</label>
+              <input id="cuenta-correo" pInputText type="email" formControlName="correo" maxlength="120" />
+              <small class="err" *ngIf="formCuenta.controls['correo'].invalid && formCuenta.controls['correo'].touched">Escribe un correo válido.</small>
+            </div>
+          </div>
+          <div class="form-actions">
+            <p-button type="button" label="Cancelar" severity="secondary" [outlined]="true" (onClick)="cancelarCuenta()"></p-button>
+            <p-button type="submit" label="Crear cuenta" icon="pi pi-user-plus" [loading]="creandoCuenta"></p-button>
+          </div>
+        </form>
+      </section>
+
       <div *ngIf="loading" class="loading">Buscando información...</div>
       <div *ngIf="!loading && errorMsg" class="error">{{ errorMsg }}</div>
 
       <div class="table-wrapper" *ngIf="!loading && !errorMsg && visibles.length">
         <table class="data-table">
-          <thead><tr><th>Documento</th><th>Nombre</th><th>Tipo</th><th>Contacto</th><th>Dirección</th><th>Estado</th><th *ngIf="puedeGestionar"></th></tr></thead>
+          <thead><tr><th>Documento</th><th>Nombre</th><th>Tipo</th><th>Contacto</th><th>Dirección</th><th>Cuenta</th><th>Estado</th><th *ngIf="puedeGestionar"></th></tr></thead>
           <tbody>
             <tr *ngFor="let c of visibles">
               <td>{{ c.documento }}</td><td><strong>{{ c.nombre }}</strong></td><td>{{ c.tipoCliente }}</td>
               <td>{{ c.telefono || c.correo }}</td><td>{{ c.direccion || '-' }}</td>
+              <td>
+                <span *ngIf="c.usuario; else sinCuenta" class="chip verde" title="Entra al portal con este usuario">{{ c.usuario }}</span>
+                <ng-template #sinCuenta>
+                  <p-button *ngIf="puedeGestionar && c.activo; else soloTexto" label="Crear cuenta" icon="pi pi-user-plus" [text]="true" (onClick)="nuevaCuenta(c)"></p-button>
+                  <ng-template #soloTexto><span class="ayuda">Sin cuenta</span></ng-template>
+                </ng-template>
+              </td>
               <td><span class="chip" [class.gris]="!c.activo">{{ c.activo ? 'Activo' : 'Inactivo' }}</span></td>
               <td class="acciones" *ngIf="puedeGestionar"><p-button icon="pi pi-pencil" [text]="true" ariaLabel="Editar" (onClick)="editar(c)"></p-button></td>
             </tr>
