@@ -64,13 +64,23 @@ describe('Galpones', () => {
     expect(svc.actualizar).toHaveBeenCalledWith(1, { nombre: 'Galpón 1', capacidadMaxima: 6000 });
   });
 
+  it('no deja bajar la capacidad por debajo de las aves alojadas', () => {
+    component.editar(component.galpones[0]);
+    component.form.patchValue({ capacidadMaxima: 700 });
+    component.guardar();
+
+    expect(component.form.get('capacidadMaxima')!.errors?.['limite'].mensaje)
+      .toBe('El galpón ya tiene 1.800 aves: la capacidad no puede ser menor.');
+    expect(svc.actualizar).not.toHaveBeenCalled();
+  });
+
   it('muestra el mensaje de PostgreSQL cuando rechaza el cambio', () => {
-    const mensaje = 'La capacidad del galpón "Galpón 1" (700) no puede ser menor que las aves de su lote activo (800).';
+    const mensaje = 'El galpón no se pudo actualizar.';
     svc.actualizar.and.returnValue(throwError(() => new HttpErrorResponse({
       status: 409, error: { estado: 409, mensaje, detalles: [], fecha: '' }
     })));
     component.editar(component.galpones[0]);
-    component.form.patchValue({ capacidadMaxima: 700 });
+    component.form.patchValue({ capacidadMaxima: 2000 });
     component.guardar();
 
     expect(messages.add).toHaveBeenCalledWith(jasmine.objectContaining({ severity: 'error', detail: mensaje }));

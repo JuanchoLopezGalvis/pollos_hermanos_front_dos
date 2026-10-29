@@ -6,6 +6,7 @@ import { MessageService, ConfirmationService } from 'primeng/api';
 import { ComercialService, PedidoDTO, ClienteDTO, EstadoPedido } from '../services/comercial.service';
 import { LoteService, LoteDTO } from '../services/lote.service';
 import { AuthService } from '../services/auth.service';
+import { LIMITES, decimal, dinero, entero, hasta } from '../services/validaciones';
 import { mensajeError } from '../services/error-api';
 import { hoyISO } from '../navegacion';
 
@@ -55,9 +56,9 @@ export class Pedidos implements OnInit {
     });
     this.formVenta = this.fb.group({
       fechaVenta: [this.hoy, Validators.required],
-      pesoPromedioLibras: [null, Validators.min(0.01)],
-      pesoTotalLibras: [null, [Validators.required, Validators.min(0.01)]],
-      precioLibra: [null, [Validators.required, Validators.min(1)]],
+      pesoPromedioLibras: [null, decimal(0.01, LIMITES.pesoAveLibras, 2, false)],
+      pesoTotalLibras: [null, decimal(0.01, LIMITES.cantidad10)],
+      precioLibra: [null, dinero()],
       fechaLimitePago: [null]
     });
   }
@@ -106,10 +107,15 @@ export class Pedidos implements OnInit {
   }
 
   agregarLinea(): void {
-    this.lineas.push(this.fb.group({
+    const linea = this.fb.group({
       idLote: [null, Validators.required],
-      cantidadAves: [null, [Validators.required, Validators.min(1), Validators.pattern(/^\d+$/)]]
-    }));
+      // No se piden más aves de las que tiene disponibles el lote elegido.
+      cantidadAves: [null, [...entero(1, LIMITES.aves), hasta(
+        c => this.disponibles(c.parent?.get('idLote')?.value ?? null),
+        max => `El lote solo tiene ${max.toLocaleString('es-CO')} aves disponibles.`)]]
+    });
+    linea.get('idLote')!.valueChanges.subscribe(() => linea.get('cantidadAves')!.updateValueAndValidity());
+    this.lineas.push(linea);
   }
 
   quitarLinea(i: number): void {

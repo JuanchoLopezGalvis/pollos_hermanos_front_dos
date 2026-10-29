@@ -9,6 +9,7 @@ import {
 import { ProveedorService, ProveedorDTO } from '../services/proveedor.service';
 import { LoteService, LoteDTO } from '../services/lote.service';
 import { AuthService } from '../services/auth.service';
+import { LIMITES, decimal, dinero, entero } from '../services/validaciones';
 import { mensajeError } from '../services/error-api';
 import { hoyISO } from '../navegacion';
 
@@ -57,19 +58,19 @@ export class Alimentacion implements OnInit {
       idProveedor: [null, Validators.required],
       idTipoAlimento: [null, Validators.required],
       fecha: [this.hoy, Validators.required],
-      cantidadBultos: [null, [Validators.required, Validators.min(1), Validators.pattern(/^\d+$/)]],
-      costoUnitario: [null, [Validators.required, Validators.min(1)]]
+      cantidadBultos: [null, entero(1, LIMITES.aves)],
+      costoUnitario: [null, dinero()]
     });
     this.formConsumo = this.fb.group({
       idLote: [null, Validators.required],
       idTipoAlimento: [null, Validators.required],
       fecha: [this.hoy, Validators.required],
-      cantidadBultos: [null, [Validators.required, Validators.min(0.01)]]
+      cantidadBultos: [null, decimal(0.01, LIMITES.cantidad8)]
     });
     this.formTipo = this.fb.group({
       nombre: ['', [Validators.required, Validators.maxLength(80)]],
       idEtapa: [null, Validators.required],
-      pesoBultoKg: [40, [Validators.min(0.01)]]
+      pesoBultoKg: [40, decimal(0.01, LIMITES.pesoBultoKg)]
     });
   }
 

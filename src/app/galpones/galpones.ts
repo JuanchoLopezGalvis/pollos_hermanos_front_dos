@@ -1,9 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormGroup, ValidationErrors, Validators } from '@angular/forms';
 import { finalize } from 'rxjs/operators';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { GalponService, GalponDTO, GalponOcupacionDTO, ESTADOS_GALPON } from '../services/galpon.service';
 import { AuthService } from '../services/auth.service';
+import { LIMITES, entero } from '../services/validaciones';
 import { mensajeError } from '../services/error-api';
 
 /**
@@ -49,6 +50,14 @@ export class Galpones implements OnInit {
   get f() { return this.form.controls; }
 
   /** Aves vivas alojadas en todos los galpones. */
+  /** Al editar, la capacidad no puede quedar por debajo de las aves que ya están en el galpón. */
+  private cabenLasAlojadas(control: AbstractControl): ValidationErrors | null {
+    const alojadas = this.editando?.id ? this.ocupacion[this.editando.id]?.avesAlojadas ?? 0 : 0;
+    const v = control.value;
+    return v !== null && v !== '' && alojadas > 0 && Number(v) < alojadas
+      ? { limite: { mensaje: `El galpón ya tiene ${alojadas.toLocaleString('es-CO')} aves: la capacidad no puede ser menor.` } } : null;
+  }
+
   get avesAlojadas(): number {
     return Object.values(this.ocupacion).reduce((t, o) => t + o.avesAlojadas, 0);
   }
@@ -69,7 +78,7 @@ export class Galpones implements OnInit {
   private crearFormulario(): FormGroup {
     return this.fb.group({
       nombre: ['', [Validators.required, Validators.maxLength(60)]],
-      capacidadMaxima: [null, [Validators.required, Validators.min(1), Validators.pattern(/^\d+$/)]],
+      capacidadMaxima: [null, [...entero(1, LIMITES.aves), (c: AbstractControl) => this.cabenLasAlojadas(c)]],
       estado: ['DISPONIBLE']
     });
   }

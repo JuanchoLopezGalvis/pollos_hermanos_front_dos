@@ -8,6 +8,7 @@ import { CatalogoService, CatalogoDTO } from '../services/catalogo.service';
 import { PersonalService, EmpleadoDTO } from '../services/personal.service';
 import { LoteService, LoteDTO } from '../services/lote.service';
 import { AuthService } from '../services/auth.service';
+import { LIMITES, dinero, entero } from '../services/validaciones';
 import { mensajeError } from '../services/error-api';
 import { hoyISO } from '../navegacion';
 
@@ -57,7 +58,7 @@ export class Gastos implements OnInit {
       idCategoriaGasto: [null, Validators.required],
       idLote: [null],
       fecha: [this.hoy, Validators.required],
-      monto: [null, [Validators.required, Validators.min(1)]],
+      monto: [null, dinero()],
       descripcion: ['', [Validators.required, Validators.maxLength(200)]]
     });
     this.formJornada = this.fb.group({
@@ -69,7 +70,7 @@ export class Gastos implements OnInit {
     this.formIngreso = this.fb.group({
       idLote: [null, Validators.required],
       fecha: [this.hoy, Validators.required],
-      monto: [null, [Validators.required, Validators.min(1)]],
+      monto: [null, dinero()],
       descripcion: ['', [Validators.required, Validators.maxLength(200)]]
     });
   }
@@ -125,8 +126,8 @@ export class Gastos implements OnInit {
     const anterior = this.lineas.length ? this.lineas.at(this.lineas.length - 1).value.tarifaPorAve : null;
     this.lineas.push(this.fb.group({
       idEmpleado: [null, Validators.required],
-      avesBeneficiadas: [null, [Validators.required, Validators.min(1), Validators.pattern(/^\d+$/)]],
-      tarifaPorAve: [anterior, [Validators.required, Validators.min(1)]]
+      avesBeneficiadas: [null, entero(1, LIMITES.aves)],
+      tarifaPorAve: [anterior, dinero()]
     }));
   }
 

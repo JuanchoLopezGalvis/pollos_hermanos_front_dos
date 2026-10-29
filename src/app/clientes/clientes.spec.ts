@@ -30,7 +30,7 @@ describe('Clientes', () => {
     const c = fixture.componentInstance;
 
     c.nuevo();
-    c.form.patchValue({ idTipoCliente: 1, documento: '900', nombre: 'Asadero' });
+    c.form.patchValue({ idTipoCliente: 1, documento: '900123456-7', nombre: 'Asadero' });
     expect(c.form.errors?.['sinContacto']).toBeTrue();
     c.form.patchValue({ telefono: '3105550000' });
     expect(c.form.valid).toBeTrue();

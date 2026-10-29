@@ -95,13 +95,24 @@ describe('Lotes', () => {
     expect(messages.add).toHaveBeenCalledWith(jasmine.objectContaining({ severity: 'warn', summary: 'Alerta de mortalidad' }));
   });
 
+  it('no deja registrar más mortalidad que las aves vivas del lote', () => {
+    component.seleccionar(component.lotes[0]);
+    const l = component.lotes[0];
+    const vivas = l.cantidadInicial - l.mortalidadAcumulada - l.avesVendidas;
+    component.formMortalidad.patchValue({ cantidad: vivas + 1 });
+    component.registrarMortalidad();
+
+    expect(component.formMortalidad.get('cantidad')!.errors?.['limite']).toBeTruthy();
+    expect(svc.registrarMortalidad).not.toHaveBeenCalled();
+  });
+
   it('muestra el rechazo de PostgreSQL al registrar mortalidad', () => {
-    const mensaje = 'La mortalidad (5000) supera las aves disponibles del lote L-2026-01 (3880).';
+    const mensaje = 'La mortalidad no se pudo registrar.';
     svc.registrarMortalidad.and.returnValue(throwError(() => new HttpErrorResponse({
       status: 409, error: { estado: 409, mensaje, detalles: [], fecha: '' }
     })));
     component.seleccionar(component.lotes[0]);
-    component.formMortalidad.patchValue({ cantidad: 5000 });
+    component.formMortalidad.patchValue({ cantidad: 1 });
     component.registrarMortalidad();
 
     expect(messages.add).toHaveBeenCalledWith(jasmine.objectContaining({ severity: 'error', detail: mensaje }));

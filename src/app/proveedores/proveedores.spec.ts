@@ -29,7 +29,7 @@ describe('Proveedores', () => {
     const c = fixture.componentInstance;
 
     c.nuevo();
-    c.form.patchValue({ nit: '900', nombre: 'Concentrados', suministraAlimento: false, suministraSanidad: false });
+    c.form.patchValue({ nit: '900123456-7', nombre: 'Concentrados', suministraAlimento: false, suministraSanidad: false });
     expect(c.form.errors?.['sinSuministro']).toBeTrue();
     c.form.patchValue({ suministraSanidad: true });
     expect(c.form.valid).toBeTrue();

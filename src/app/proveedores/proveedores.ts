@@ -4,6 +4,7 @@ import { finalize } from 'rxjs/operators';
 import { MessageService } from 'primeng/api';
 import { ProveedorService, ProveedorDTO } from '../services/proveedor.service';
 import { AuthService } from '../services/auth.service';
+import { PATRON_DOCUMENTO, PATRON_TELEFONO } from '../services/validaciones';
 import { mensajeError } from '../services/error-api';
 
 /** El proveedor debe suministrar alimento, insumos sanitarios o ambos. */
@@ -49,9 +50,9 @@ export class Proveedores implements OnInit {
 
   private crearFormulario(): FormGroup {
     return this.fb.group({
-      nit: ['', [Validators.required, Validators.maxLength(20)]],
+      nit: ['', [Validators.required, Validators.maxLength(20), Validators.pattern(PATRON_DOCUMENTO)]],
       nombre: ['', [Validators.required, Validators.maxLength(120)]],
-      telefono: ['', [Validators.maxLength(20)]],
+      telefono: ['', [Validators.maxLength(20), Validators.pattern(PATRON_TELEFONO)]],
       correo: ['', [Validators.email, Validators.maxLength(120)]],
       direccion: ['', [Validators.maxLength(200)]],
       suministraAlimento: [true],
@@ -97,7 +98,7 @@ export class Proveedores implements OnInit {
     }
     const v = this.form.value;
     const vacio = (x: string) => x?.trim() || null;
-    const dto: ProveedorDTO = { ...v, telefono: vacio(v.telefono), correo: vacio(v.correo), direccion: vacio(v.direccion) };
+    const dto: ProveedorDTO = { ...v, nit: v.nit.trim(), telefono: vacio(v.telefono), correo: vacio(v.correo), direccion: vacio(v.direccion) };
     this.guardando = true;
     const peticion = this.editando?.idProveedor
       ? this.proveedorSvc.actualizar(this.editando.idProveedor, dto)

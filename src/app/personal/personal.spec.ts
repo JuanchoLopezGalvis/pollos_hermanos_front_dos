@@ -32,6 +32,10 @@ describe('Personal', () => {
     c.nuevo();
     expect(c.form.valid).toBeFalse();
     c.form.patchValue({ documento: '101', nombres: 'Berta', apellidos: 'Uno', idCargo: 5 });
+    expect(c.f['documento'].errors?.['pattern']).toBeTruthy();
+    c.form.patchValue({ documento: '1010101010', telefono: '300 123 4567' });
+    expect(c.f['telefono'].errors?.['pattern']).toBeTruthy();
+    c.form.patchValue({ telefono: '3001234567' });
     expect(c.form.valid).toBeTrue();
   });
 });

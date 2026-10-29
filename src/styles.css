@@ -1,22 +1,22 @@
-/* Estilos globales de Los Pollos Hermanos (propuesta "Campo vivo"). Los componentes solo agregan lo propio de cada pantalla. */
+/* Estilos globales de Los Pollos Hermanos, en rojo y negro. Los nombres de las variables (verde, yema) se conservan de la paleta anterior: "verde" es la escala negra/roja principal y "yema" el rojo de acento. Los componentes solo agregan lo propio de cada pantalla. */
 
 :root {
-  --ph-fondo: #f3f5f1;
+  --ph-fondo: #f5f3f3;
   --ph-superficie: #ffffff;
-  --ph-tinta: #13261c;
-  --ph-verde-900: #13261c;
-  --ph-verde-800: #1d3528;
-  --ph-verde-700: #2f5a41;
-  --ph-verde-500: #4c7a5e;
-  --ph-verde-100: #e3efe7;
-  --ph-yema: #f2b705;
-  --ph-yema-suave: #fdf0c4;
+  --ph-tinta: #141414;
+  --ph-verde-900: #141414;
+  --ph-verde-800: #232020;
+  --ph-verde-700: #b3121f;
+  --ph-verde-500: #d9505b;
+  --ph-verde-100: #fbe5e7;
+  --ph-yema: #e11d2e;
+  --ph-yema-suave: #fde3e5;
   --ph-tomate: #b23a1b;
   --ph-tomate-suave: #fbe1da;
-  --ph-texto-suave: #56665c;
-  --ph-texto-claro: #b9c7be;
-  --ph-linea: #e3e9e5;
-  --ph-borde: #cbd5ce;
+  --ph-texto-suave: #5e5858;
+  --ph-texto-claro: #c9c2c2;
+  --ph-linea: #ece7e7;
+  --ph-borde: #d8d0d0;
   --ph-display: 'Bricolage Grotesque', 'Segoe UI', sans-serif;
   --ph-cuerpo: 'Instrument Sans', -apple-system, 'Segoe UI', Roboto, sans-serif;
   --sidebar-width: 264px;
@@ -97,7 +97,7 @@ h1, h2, h3 {
   border-radius: 24px;
   padding: 28px;
   margin-bottom: 24px;
-  box-shadow: 0 1px 2px rgba(19, 38, 28, 0.04), 0 12px 32px -20px rgba(19, 38, 28, 0.25);
+  box-shadow: 0 1px 2px rgba(20, 20, 20, 0.04), 0 12px 32px -20px rgba(20, 20, 20, 0.25);
 }
 
 .card h2 {
@@ -204,12 +204,12 @@ h1, h2, h3 {
 .p-button.p-button-warn:not(.p-button-text):not(.p-button-outlined) {
   background: var(--ph-yema) !important;
   border-color: var(--ph-yema) !important;
-  color: var(--ph-tinta) !important;
+  color: #ffffff !important;
 }
 
 .p-button.p-button-warn:not(.p-button-text):not(.p-button-outlined):hover {
-  background: #dba504 !important;
-  border-color: #dba504 !important;
+  background: #b3121f !important;
+  border-color: #b3121f !important;
 }
 
 /* ---------- Tablas ---------- */
@@ -218,7 +218,7 @@ h1, h2, h3 {
   overflow-x: auto;
   background: var(--ph-superficie);
   border-radius: 20px;
-  box-shadow: 0 1px 2px rgba(19, 38, 28, 0.04), 0 12px 32px -20px rgba(19, 38, 28, 0.25);
+  box-shadow: 0 1px 2px rgba(20, 20, 20, 0.04), 0 12px 32px -20px rgba(20, 20, 20, 0.25);
 }
 
 .data-table {
@@ -246,7 +246,7 @@ h1, h2, h3 {
 }
 
 .data-table tbody tr:hover {
-  background: #f8faf7;
+  background: #faf8f8;
 }
 
 .data-table .acciones {
@@ -262,7 +262,7 @@ h1, h2, h3 {
   font-size: 0.75rem;
   font-weight: 700;
   background: var(--ph-yema-suave);
-  color: #6b4e00;
+  color: #8a1020;
 }
 
 .chip.rojo {
@@ -271,7 +271,7 @@ h1, h2, h3 {
 }
 
 .chip.verde {
-  background: var(--ph-verde-100);
+  background: #e3f1e7;
   color: #1f4630;
 }
 
@@ -338,7 +338,7 @@ h1, h2, h3 {
 .tabs button.activa {
   background: var(--ph-superficie);
   color: var(--ph-tinta);
-  box-shadow: 0 1px 3px rgba(19, 38, 28, 0.12);
+  box-shadow: 0 1px 3px rgba(20, 20, 20, 0.12);
 }
 
 .resumen {
@@ -352,7 +352,7 @@ h1, h2, h3 {
   background: var(--ph-superficie);
   border-radius: 18px;
   padding: 16px 20px;
-  box-shadow: 0 1px 2px rgba(19, 38, 28, 0.04);
+  box-shadow: 0 1px 2px rgba(20, 20, 20, 0.04);
 }
 
 .resumen .dato strong {
@@ -398,6 +398,15 @@ h1, h2, h3 {
   grid-template-columns: 2fr 1fr 1fr auto;
   gap: 10px;
   align-items: center;
+}
+
+/* El error de una línea ocupa toda la fila; vacío no deja espacio. */
+.linea app-error-campo {
+  grid-column: 1 / -1;
+}
+
+.linea app-error-campo:empty {
+  display: none;
 }
 
 @media (max-width: 720px) {

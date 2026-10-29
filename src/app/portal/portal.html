@@ -15,7 +15,7 @@
   <main class="content">
     <header>
       <h1>Hola{{ cliente ? ', ' + cliente.nombre : '' }}</h1>
-      <p>Pide tus pollos, sigue tus pedidos y paga tus compras.</p>
+      <p>Pide tus pollos, sigue tus pedidos, paga tus compras y revisa lo que has pagado.</p>
     </header>
 
     <div *ngIf="errorMsg" class="error">{{ errorMsg }}</div>
@@ -31,6 +31,7 @@
         <button type="button" [class.activa]="pestana === 'pedir'" (click)="pestana = 'pedir'">Hacer pedido</button>
         <button type="button" [class.activa]="pestana === 'pedidos'" (click)="pestana = 'pedidos'">Mis pedidos</button>
         <button type="button" [class.activa]="pestana === 'compras'" (click)="pestana = 'compras'">Mis compras</button>
+        <button type="button" [class.activa]="pestana === 'historial'" (click)="pestana = 'historial'">Historial de pagos</button>
       </div>
     </div>
 
@@ -48,7 +49,7 @@
           <div class="field">
             <label for="cantidad">¿Cuántos pollos? *</label>
             <input id="cantidad" pInputText type="number" min="1" step="1" formControlName="cantidadAves" />
-            <small class="err" *ngIf="f['cantidadAves'].invalid && f['cantidadAves'].touched">Escribe un número entero mayor que cero.</small>
+            <app-error-campo [control]="f['cantidadAves']"></app-error-campo>
           </div>
           <div class="field">
             <label for="fecha">¿Para cuándo? *</label>
@@ -87,6 +88,7 @@
                 <ng-container *ngIf="ventaDe(p) as v; else sinVenta">
                   <span class="chip" [ngClass]="claseEstadoVenta(v)">{{ v.saldo > 0 ? (v.vencida ? 'Vencido' : 'Por pagar') : 'Pagado' }}</span>
                   <a href="javascript:void(0)" (click)="verCompra(v.idVenta)">{{ v.saldo > 0 ? 'Pagar ' + (v.saldo | currency:'COP':'$':'1.0-0') : 'Ver compra' }}</a>
+                  <small class="peso">{{ v.pesoTotalLibras | number:'1.0-2' }} lb · {{ pesoPromedio(v) | number:'1.0-2' }} lb por pollo</small>
                 </ng-container>
                 <ng-template #sinVenta><span class="ayuda">{{ p.estado === 'CANCELADO' ? '-' : 'Se calcula al pesar' }}</span></ng-template>
               </td>
@@ -104,13 +106,14 @@
     <ng-container *ngIf="pestana === 'compras'">
       <div class="table-wrapper" *ngIf="ventas.length">
         <table class="data-table">
-          <thead><tr><th>Compra</th><th>Fecha</th><th>Pollos</th><th>Libras</th><th>Precio/lb</th><th>Valor</th><th>Saldo</th><th>Pagar antes de</th><th>Estado</th><th></th></tr></thead>
+          <thead><tr><th>Compra</th><th>Fecha</th><th>Pollos</th><th>Libras</th><th>Prom./pollo</th><th>Precio/lb</th><th>Valor</th><th>Saldo</th><th>Pagar antes de</th><th>Estado</th><th></th></tr></thead>
           <tbody>
             <tr *ngFor="let v of ventas" [class.seleccionada]="seleccionada?.idVenta === v.idVenta">
               <td>#{{ v.idVenta }}</td>
               <td>{{ v.fechaVenta | date:'dd/MM/yyyy' }}</td>
               <td>{{ v.cantidadAves | number }}</td>
               <td>{{ v.pesoTotalLibras | number:'1.0-2' }}</td>
+              <td>{{ pesoPromedio(v) | number:'1.0-2' }} lb</td>
               <td>{{ v.precioLibra | currency:'COP':'$':'1.0-0' }}</td>
               <td>{{ v.valorTotal | currency:'COP':'$':'1.0-0' }}</td>
               <td><strong>{{ v.saldo | currency:'COP':'$':'1.0-0' }}</strong></td>
@@ -131,6 +134,10 @@
       <section class="card animate__animated animate__fadeIn" *ngIf="seleccionada">
         <h2>Compra #{{ seleccionada.idVenta }}</h2>
         <dl class="ficha">
+          <dt>Pollos</dt><dd>{{ seleccionada.cantidadAves | number }}</dd>
+          <dt>Peso total</dt><dd>{{ seleccionada.pesoTotalLibras | number:'1.0-2' }} lb</dd>
+          <dt>Peso promedio por pollo</dt><dd>{{ pesoPromedio(seleccionada) | number:'1.0-2' }} lb</dd>
+          <dt>Precio por libra</dt><dd>{{ seleccionada.precioLibra | currency:'COP':'$':'1.0-0' }}</dd>
           <dt>Valor</dt><dd>{{ seleccionada.valorTotal | currency:'COP':'$':'1.0-0' }}</dd>
           <dt>Pagado</dt><dd>{{ seleccionada.pagado | currency:'COP':'$':'1.0-0' }}</dd>
           <dt>Saldo</dt><dd><strong>{{ seleccionada.saldo | currency:'COP':'$':'1.0-0' }}</strong></dd>
@@ -139,9 +146,10 @@
         <div class="pago-linea" *ngIf="seleccionada.saldo > 0">
           <div class="pago-linea-texto">
             <strong>Pagar con Wompi</strong>
-            <p class="ayuda">Pagas en la página segura de Wompi (ambiente de pruebas: no se cobra dinero real). Puedes abonar una parte o pagar todo el saldo.</p>
+            <p class="ayuda">Pagas en la página segura de Wompi (ambiente de pruebas: no se cobra dinero real). Puedes abonar una parte o pagar todo el saldo.
+              Te enviamos el comprobante a {{ cliente?.correo || 'tu correo' }}.</p>
           </div>
-          <input pInputText type="number" step="100" min="1" [max]="seleccionada.saldo" [(ngModel)]="montoPago" aria-label="Monto a pagar" />
+          <input pInputText type="number" step="0.01" min="1" [max]="seleccionada.saldo" [(ngModel)]="montoPago" aria-label="Monto a pagar" />
           <p-button label="Pagar" icon="pi pi-credit-card" severity="warn" [loading]="redirigiendo" (onClick)="pagar()"></p-button>
         </div>
 
@@ -158,6 +166,29 @@
         </div>
         <p class="ayuda" *ngIf="!pagos.length">Todavía no hay pagos en esta compra.</p>
       </section>
+    </ng-container>
+
+    <!-- Historial de pagos -->
+    <ng-container *ngIf="pestana === 'historial'">
+      <div class="resumen" *ngIf="historial.length">
+        <div class="dato"><strong>{{ totalPagado | currency:'COP':'$':'1.0-0' }}</strong><span>pagado en total</span></div>
+        <div class="dato"><strong>{{ historial.length }}</strong><span>{{ historial.length === 1 ? 'pago' : 'pagos' }}</span></div>
+      </div>
+      <div class="table-wrapper" *ngIf="historial.length">
+        <table class="data-table">
+          <thead><tr><th>Fecha</th><th>Compra</th><th>Medio</th><th>Referencia</th><th>Monto</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let pg of historial">
+              <td>{{ pg.fecha | date:'dd/MM/yyyy' }}</td>
+              <td><a href="javascript:void(0)" (click)="verCompra(pg.idVenta)">#{{ pg.idVenta }}</a></td>
+              <td>{{ pg.metodo }}</td>
+              <td>{{ pg.referenciaPasarela || '-' }}</td>
+              <td><strong>{{ pg.monto | currency:'COP':'$':'1.0-0' }}</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div *ngIf="!cargando && !historial.length" class="no-data">Todavía no has hecho pagos.</div>
     </ng-container>
   </main>
 </div>

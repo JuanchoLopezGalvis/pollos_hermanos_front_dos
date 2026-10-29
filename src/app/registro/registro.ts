@@ -3,6 +3,7 @@ import { AbstractControl, FormBuilder, FormGroup, ValidationErrors, Validators }
 import { Router } from '@angular/router';
 import { finalize } from 'rxjs/operators';
 import { AuthService, TipoClienteDTO } from '../services/auth.service';
+import { PATRON_DOCUMENTO, PATRON_TELEFONO } from '../services/validaciones';
 import { mensajeError } from '../services/error-api';
 
 /** Las dos contraseñas deben coincidir. */
@@ -30,9 +31,9 @@ export class Registro implements OnInit {
   constructor(private fb: FormBuilder, private auth: AuthService, private router: Router) {
     this.form = this.fb.group({
       idTipoCliente: [null, Validators.required],
-      documento: ['', [Validators.required, Validators.maxLength(20)]],
+      documento: ['', [Validators.required, Validators.maxLength(20), Validators.pattern(PATRON_DOCUMENTO)]],
       nombre: ['', [Validators.required, Validators.maxLength(120)]],
-      telefono: ['', Validators.maxLength(20)],
+      telefono: ['', [Validators.maxLength(20), Validators.pattern(PATRON_TELEFONO)]],
       correo: ['', [Validators.required, Validators.email, Validators.maxLength(120)]],
       direccion: ['', [Validators.required, Validators.maxLength(200)]],
       nombreUsuario: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(50), Validators.pattern(/^[A-Za-z0-9._-]+$/)]],

@@ -88,6 +88,17 @@ td .chip + a {
   font-weight: 600;
 }
 
+td .peso {
+  display: block;
+  margin-top: 4px;
+  color: var(--ph-texto-suave);
+}
+
+td a {
+  color: var(--ph-verde-700);
+  font-weight: 600;
+}
+
 tr.seleccionada td {
   background: var(--ph-yema-suave);
 }

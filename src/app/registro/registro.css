@@ -41,7 +41,7 @@
   height: 32px;
   border-radius: 50%;
   background: var(--ph-yema);
-  color: var(--ph-tinta);
+  color: #ffffff;
 }
 
 @media (max-width: 560px) {

@@ -8,6 +8,7 @@ import { ProveedorService, ProveedorDTO } from '../services/proveedor.service';
 import { PersonalService, EmpleadoDTO } from '../services/personal.service';
 import { LoteService, LoteDTO } from '../services/lote.service';
 import { AuthService } from '../services/auth.service';
+import { LIMITES, decimal, dinero } from '../services/validaciones';
 import { mensajeError } from '../services/error-api';
 import { hoyISO } from '../navegacion';
 
@@ -65,15 +66,15 @@ export class Sanidad implements OnInit {
     this.formCompra = this.fb.group({
       idProducto: [null, Validators.required],
       fecha: [this.hoy, Validators.required],
-      cantidad: [null, [Validators.required, Validators.min(0.01)]],
-      costoUnitario: [null, [Validators.required, Validators.min(0.01)]]
+      cantidad: [null, decimal(0.01, LIMITES.cantidad10)],
+      costoUnitario: [null, dinero()]
     });
     this.formAplicacion = this.fb.group({
       idLote: [null, Validators.required],
       idProducto: [null, Validators.required],
       idEmpleado: [null, Validators.required],
       fecha: [this.hoy, Validators.required],
-      dosis: [null, [Validators.required, Validators.min(0.01)]],
+      dosis: [null, decimal(0.01, LIMITES.cantidad10)],
       observaciones: ['', Validators.maxLength(300)]
     });
   }

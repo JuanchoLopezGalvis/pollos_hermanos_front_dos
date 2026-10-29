@@ -7,7 +7,58 @@ import {
 } from '../services/seguimiento.service';
 import { AuthService } from '../services/auth.service';
 import { LoteService, LoteDTO } from '../services/lote.service';
+import { LIMITES, decimal, entero } from '../services/validaciones';
 import { mensajeError } from '../services/error-api';
+import { PuntoGrafico } from './graficos/grafico-linea';
+import { BarraGrafico } from './graficos/grafico-barras';
+
+/** Indicadores del lote filtrado. */
+export interface IndicadoresLote {
+  pesoActual: number | null;
+  edadDias: number | null;
+  /** Gramos que gana por día entre el primer y el último peso. */
+  gananciaDiaria: number | null;
+  uniformidad: number | null;
+  novedades: number;
+}
+
+/** Indicadores de todos los lotes. */
+export interface IndicadoresGenerales {
+  registros: number;
+  lotes: number;
+  muestreos: number;
+  novedades: number;
+}
+
+/** Promedia los valores que caen en el mismo día de vida (varios registros el mismo día). */
+function promedioPorDia(valores: { dia: number; valor: number; fecha?: string }[]): PuntoGrafico[] {
+  const porDia = new Map<number, { suma: number; n: number; fecha?: string }>();
+  valores.forEach(v => {
+    const actual = porDia.get(v.dia) ?? { suma: 0, n: 0, fecha: v.fecha };
+    porDia.set(v.dia, { suma: actual.suma + v.valor, n: actual.n + 1, fecha: actual.fecha });
+  });
+  return [...porDia.entries()].sort((a, b) => a[0] - b[0]).map(([dia, a]) => ({
+    x: dia,
+    y: Math.round((a.suma / a.n) * 10) / 10,
+    detalle: [a.fecha ? fechaCorta(a.fecha) : '', a.n > 1 ? `promedio de ${a.n} registros` : ''].filter(Boolean).join(' · ')
+  }));
+}
+
+function fechaCorta(iso: string): string {
+  const [a, m, d] = iso.split('-');
+  return `${d}/${m}/${a}`;
+}
+
+/** Cuenta las novedades por tipo, de la más frecuente a la menos. */
+function novedadesPorTipo(lista: SeguimientoCrecimientoDTO[]): BarraGrafico[] {
+  const conteo = new Map<string, number>();
+  lista.forEach(s => (s.novedades ?? []).forEach(n => {
+    const tipo = n.tipo.trim();
+    conteo.set(tipo, (conteo.get(tipo) ?? 0) + 1);
+  }));
+  return [...conteo.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .map(([etiqueta, valor]) => ({ etiqueta, valor, detalle: `${valor} ${valor === 1 ? 'vez' : 'veces'}` }));
+}
 
 /** El muestreo es opcional, pero si se llena un campo se deben llenar los dos. */
 function muestreoCompleto(group: AbstractControl): ValidationErrors | null {
@@ -37,6 +88,17 @@ export class Seguimiento implements OnInit {
   curva: CurvaCrecimientoSemanalDTO[] = [];
   loteFiltro = '';
   loteActual = '';
+  /** Lotes que se pueden elegir en el filtro: activos o con seguimientos. */
+  codigosLote: string[] = [];
+
+  // Estadísticas: se recalculan al cargar para que las gráficas reciban los mismos arreglos.
+  indicadoresLote: IndicadoresLote | null = null;
+  indicadoresGenerales: IndicadoresGenerales | null = null;
+  pesoPorDia: PuntoGrafico[] = [];
+  uniformidadPorDia: PuntoGrafico[] = [];
+  semanas: BarraGrafico[] = [];
+  pesoPorLote: BarraGrafico[] = [];
+  novedadesTipo: BarraGrafico[] = [];
   loading = false;
   guardando = false;
   errorMsg = '';
@@ -68,14 +130,12 @@ export class Seguimiento implements OnInit {
     return this.form.get('novedades') as FormArray;
   }
 
-  /** Mayor peso de la curva, para escalar las barras. */
-  get pesoMaximo(): number {
-    return Math.max(1, ...this.curva.map(c => c.pesoPromedioGramos));
-  }
-
   ngOnInit(): void {
     this.loteSvc.obtenerTodos().subscribe({
-      next: (l) => this.lotesActivos = (l ?? []).filter(x => x.estado === 'EN_ENGORDE' || x.estado === 'LISTO_PARA_VENTA'),
+      next: (l) => {
+        this.lotesActivos = (l ?? []).filter(x => x.estado === 'EN_ENGORDE' || x.estado === 'LISTO_PARA_VENTA');
+        this.agregarCodigos(this.lotesActivos.map(x => x.codigo));
+      },
       error: () => this.lotesActivos = []
     });
     this.cargar();
@@ -85,11 +145,11 @@ export class Seguimiento implements OnInit {
     return this.fb.group({
       codigoLote: ['', [Validators.required, Validators.maxLength(30)]],
       fecha: [this.hoy],
-      pesoPromedioGramos: [null, [Validators.min(0.01)]],
+      pesoPromedioGramos: [null, decimal(0.01, LIMITES.pesoAveGramos, 2, false)],
       observaciones: ['', [Validators.maxLength(1000)]],
       muestreo: this.fb.group({
-        avesPesadas: [null, [Validators.min(1), Validators.pattern(/^\d+$/)]],
-        uniformidadPorcentaje: [null, [Validators.min(0), Validators.max(100)]]
+        avesPesadas: [null, entero(1, LIMITES.aves, false)],
+        uniformidadPorcentaje: [null, decimal(0, 100, 2, false)]
       }, { validators: muestreoCompleto }),
       novedades: this.fb.array([])
     });
@@ -117,6 +177,7 @@ export class Seguimiento implements OnInit {
     this.errorMsg = '';
     this.loteActual = lote;
     this.curva = [];
+    this.semanas = [];
 
     const peticion = lote
       ? this.seguimientoSvc.obtenerPorLote(lote)
@@ -125,19 +186,89 @@ export class Seguimiento implements OnInit {
     peticion.pipe(finalize(() => this.loading = false)).subscribe({
       next: (data) => {
         this.seguimientos = [...(data ?? [])].sort((a, b) => (b.fecha ?? '').localeCompare(a.fecha ?? ''));
+        this.agregarCodigos(this.seguimientos.map(s => s.codigoLote));
+        this.calcularEstadisticas();
       },
       error: (err) => {
         this.seguimientos = [];
+        this.calcularEstadisticas();
         this.errorMsg = mensajeError(err, 'No se pudo cargar el seguimiento.');
       }
     });
 
     if (lote) {
       this.seguimientoSvc.curvaSemanal(lote).subscribe({
-        next: (data) => this.curva = data ?? [],
-        error: () => this.curva = []
+        next: (data) => {
+          this.curva = data ?? [];
+          this.semanas = this.curva.map(c => ({
+            etiqueta: `Sem. ${c.semana}`, valor: c.pesoPromedioGramos,
+            detalle: `${c.registros} ${c.registros === 1 ? 'registro' : 'registros'} (días ${c.semana * 7 - 6} a ${c.semana * 7})`
+          }));
+        },
+        error: () => { this.curva = []; this.semanas = []; }
       });
     }
+  }
+
+  /** Elegir un lote en el filtro muestra sus estadísticas; vacío muestra todos. */
+  elegirLote(codigo: string): void {
+    this.loteFiltro = codigo;
+    this.cargar();
+  }
+
+  private agregarCodigos(codigos: string[]): void {
+    this.codigosLote = [...new Set([...this.codigosLote, ...codigos])].sort();
+  }
+
+  /** Calcula los indicadores y las series de las gráficas con los seguimientos cargados. */
+  calcularEstadisticas(): void {
+    const lista = this.seguimientos;
+    const conPeso = lista.filter(s => s.pesoPromedioGramos != null && s.edadDias != null);
+    this.novedadesTipo = novedadesPorTipo(lista);
+    const totalNovedades = lista.reduce((t, s) => t + (s.novedades?.length ?? 0), 0);
+
+    if (this.loteActual) {
+      this.indicadoresGenerales = null;
+      this.pesoPorLote = [];
+      this.pesoPorDia = promedioPorDia(conPeso.map(s => ({ dia: s.edadDias!, valor: s.pesoPromedioGramos!, fecha: s.fecha })));
+      this.uniformidadPorDia = promedioPorDia(lista.filter(s => s.muestreo && s.edadDias != null)
+        .map(s => ({ dia: s.edadDias!, valor: s.muestreo!.uniformidadPorcentaje, fecha: s.fecha })));
+
+      const primero = this.pesoPorDia[0];
+      const ultimo = this.pesoPorDia[this.pesoPorDia.length - 1];
+      const muestreos = [...lista].filter(s => s.muestreo)
+        .sort((a, b) => (a.edadDias ?? 0) - (b.edadDias ?? 0));
+      this.indicadoresLote = {
+        pesoActual: ultimo?.y ?? null,
+        edadDias: lista.length ? Math.max(...lista.map(s => s.edadDias ?? 0)) : null,
+        gananciaDiaria: primero && ultimo && ultimo.x > primero.x
+          ? Math.round(((ultimo.y - primero.y) / (ultimo.x - primero.x)) * 10) / 10 : null,
+        uniformidad: muestreos.length ? muestreos[muestreos.length - 1].muestreo!.uniformidadPorcentaje : null,
+        novedades: totalNovedades
+      };
+      return;
+    }
+
+    this.indicadoresLote = null;
+    this.pesoPorDia = [];
+    this.uniformidadPorDia = [];
+    this.semanas = [];
+    this.indicadoresGenerales = {
+      registros: lista.length,
+      lotes: new Set(lista.map(s => s.codigoLote)).size,
+      muestreos: lista.filter(s => s.muestreo).length,
+      novedades: totalNovedades
+    };
+    // Último peso registrado de cada lote (el de mayor edad).
+    const ultimoPorLote = new Map<string, SeguimientoCrecimientoDTO>();
+    conPeso.forEach(s => {
+      const actual = ultimoPorLote.get(s.codigoLote);
+      if (!actual || s.edadDias! > actual.edadDias! || (s.edadDias === actual.edadDias && (s.fecha ?? '') > (actual.fecha ?? ''))) {
+        ultimoPorLote.set(s.codigoLote, s);
+      }
+    });
+    this.pesoPorLote = [...ultimoPorLote.values()].sort((a, b) => b.pesoPromedioGramos! - a.pesoPromedioGramos!)
+      .map(s => ({ etiqueta: s.codigoLote, valor: s.pesoPromedioGramos!, detalle: `Día ${s.edadDias} · ${fechaCorta(s.fecha ?? '')}` }));
   }
 
   limpiarFiltro(): void {

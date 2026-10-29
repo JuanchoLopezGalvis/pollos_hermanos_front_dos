@@ -19,6 +19,7 @@
           <h2>{{ resultado.registrado ? 'Pago registrado' : 'Pago no registrado' }}</h2>
         </div>
         <p>{{ resultado.mensaje }}</p>
+        <p *ngIf="resultado.registrado" class="ayuda">Te enviamos el comprobante de este pago a tu correo.</p>
         <dl class="ficha">
           <dt>Transacción</dt><dd>{{ resultado.idTransaccion }}</dd>
           <dt>Estado en la pasarela</dt><dd>{{ resultado.estadoTransaccion }}</dd>

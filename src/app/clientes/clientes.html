@@ -30,7 +30,8 @@
             </div>
             <div class="field">
               <label for="documento">Documento o NIT *</label>
-              <input id="documento" pInputText formControlName="documento" maxlength="20" />
+              <input id="documento" pInputText inputmode="numeric" formControlName="documento" maxlength="17" />
+              <app-error-campo [control]="f['documento']" formato="De 5 a 15 dígitos, sin puntos ni espacios (NIT con guion y dígito de verificación: 900123456-7)."></app-error-campo>
             </div>
             <div class="field">
               <label for="nombre">Nombre *</label>
@@ -38,7 +39,8 @@
             </div>
             <div class="field">
               <label for="telefono">Teléfono</label>
-              <input id="telefono" pInputText formControlName="telefono" maxlength="20" />
+              <input id="telefono" pInputText type="tel" inputmode="tel" formControlName="telefono" maxlength="16" />
+              <app-error-campo [control]="f['telefono']" formato="De 7 a 15 dígitos, sin espacios ni guiones (puede empezar con +)."></app-error-campo>
             </div>
             <div class="field">
               <label for="correo">Correo</label>

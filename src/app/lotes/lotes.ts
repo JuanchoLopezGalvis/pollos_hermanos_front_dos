@@ -9,6 +9,7 @@ import { GalponService, GalponOcupacionDTO } from '../services/galpon.service';
 import { AlimentacionService, ConsumoAlimentoDTO } from '../services/alimentacion.service';
 import { SanidadService, AplicacionSanitariaDTO } from '../services/sanidad.service';
 import { AuthService } from '../services/auth.service';
+import { LIMITES, dinero, entero, hasta } from '../services/validaciones';
 import { mensajeError } from '../services/error-api';
 
 /**
@@ -108,20 +109,29 @@ export class Lotes implements OnInit {
   }
 
   private crearFormulario(): FormGroup {
-    return this.fb.group({
+    const form = this.fb.group({
       codigo: ['', [Validators.required, Validators.maxLength(20), Validators.pattern(/^[A-Za-z0-9-]+$/)]],
       idGalpon: [null, [Validators.required]],
       fechaIngreso: [this.hoy, [Validators.required]],
-      cantidadInicial: [null, [Validators.required, Validators.min(1), Validators.pattern(/^\d+$/)]],
-      costoPollito: [null, [Validators.required, Validators.min(0)]],
+      // Al crear, no puede superar el cupo libre del galpón elegido (al editar el galpón no cambia).
+      cantidadInicial: [null, [...entero(1, LIMITES.aves), hasta(
+        c => c.parent?.get('idGalpon')?.enabled
+          ? this.galpones.find(g => g.idGalpon === c.parent?.get('idGalpon')?.value)?.capacidadLibre : null,
+        max => `El galpón solo tiene cupo para ${max.toLocaleString('es-CO')} aves.`)]],
+      costoPollito: [null, dinero(0)],
       fechaEstimadaVenta: [null]
     });
+    form.get('idGalpon')!.valueChanges.subscribe(() => form.get('cantidadInicial')!.updateValueAndValidity());
+    return form;
   }
 
   private crearFormularioMortalidad(): FormGroup {
     return this.fb.group({
       fecha: [this.hoy, [Validators.required]],
-      cantidad: [null, [Validators.required, Validators.min(1), Validators.pattern(/^\d+$/)]],
+      // No pueden morir más aves de las que siguen vivas en el lote.
+      cantidad: [null, [...entero(1, LIMITES.aves), hasta(
+        () => this.seleccionado ? this.seleccionado.cantidadInicial - this.seleccionado.mortalidadAcumulada - this.seleccionado.avesVendidas : null,
+        max => `El lote solo tiene ${max.toLocaleString('es-CO')} aves vivas.`)]],
       causa: ['', [Validators.maxLength(200)]]
     });
   }
