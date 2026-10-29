@@ -30,12 +30,16 @@ describe('Portal', () => {
 
   beforeEach(async () => {
     portal = jasmine.createSpyObj<PortalService>('PortalService',
-      ['perfil', 'disponibilidad', 'pedidos', 'ventas', 'pagos', 'crearPedido', 'cancelarPedido', 'iniciarPago']);
+      ['perfil', 'disponibilidad', 'pedidos', 'ventas', 'pagos', 'historialPagos', 'crearPedido', 'cancelarPedido', 'iniciarPago']);
     portal.perfil.and.returnValue(of({ idCliente: 4, idTipoCliente: 1, tipoCliente: 'Tienda', documento: '900', nombre: 'Asadero', activo: true }));
     portal.disponibilidad.and.returnValue(of({ avesDisponibles: 89 }));
     portal.pedidos.and.returnValue(of([pedido]));
     portal.ventas.and.returnValue(of([venta]));
     portal.pagos.and.returnValue(of([]));
+    portal.historialPagos.and.returnValue(of([
+      { idPago: 2, idVenta: 5, fecha: '2026-10-26', monto: 30000, codigoMetodo: 'EN_LINEA', metodo: 'En línea', referenciaPasarela: 'tx-2' },
+      { idPago: 1, idVenta: 5, fecha: '2026-10-25', monto: 12000, codigoMetodo: 'EN_LINEA', metodo: 'En línea', referenciaPasarela: 'tx-1' }
+    ]));
     messages = jasmine.createSpyObj<MessageService>('MessageService', ['add']);
     confirm = jasmine.createSpyObj<ConfirmationService>('ConfirmationService', ['confirm']);
 
@@ -77,12 +81,20 @@ describe('Portal', () => {
     expect(portal.crearPedido).not.toHaveBeenCalled();
   });
 
+  it('no deja pedir más pollos de los disponibles', () => {
+    component.form.patchValue({ cantidadAves: 100 });
+    component.pedir();
+
+    expect(component.f['cantidadAves'].errors?.['limite'].mensaje).toBe('Hoy solo hay 89 pollos disponibles.');
+    expect(portal.crearPedido).not.toHaveBeenCalled();
+  });
+
   it('muestra el rechazo cuando no hay aves suficientes', () => {
-    const mensaje = 'Solo hay 89 aves disponibles: no alcanza para las 100 del pedido.';
+    const mensaje = 'Solo hay 80 aves disponibles: no alcanza para las 89 del pedido.';
     portal.crearPedido.and.returnValue(throwError(() => new HttpErrorResponse({
       status: 409, error: { estado: 409, mensaje, detalles: [], fecha: '' }
     })));
-    component.form.patchValue({ cantidadAves: 100 });
+    component.form.patchValue({ cantidadAves: 89 });
     component.pedir();
 
     expect(messages.add).toHaveBeenCalledWith(jasmine.objectContaining({ severity: 'error', detail: mensaje }));
@@ -112,6 +124,22 @@ describe('Portal', () => {
     component.montoPago = 300001;
     component.pagar();
     expect(portal.iniciarPago).not.toHaveBeenCalled();
+  });
+
+  it('muestra el peso promedio de cada pollo de la compra', () => {
+    expect(component.pesoPromedio(venta)).toBe(6);
+    component.pestana = 'compras';
+    component.verVenta(venta);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Peso promedio por pollo');
+  });
+
+  it('suma el historial de todos los pagos del cliente', () => {
+    expect(portal.historialPagos).toHaveBeenCalled();
+    expect(component.totalPagado).toBe(42000);
+    component.pestana = 'historial';
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelectorAll('tbody tr').length).toBe(2);
   });
 
   it('el pedido aparece pagado solo cuando su compra no tiene saldo', () => {

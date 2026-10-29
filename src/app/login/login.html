@@ -1,7 +1,8 @@
 <div class="login-page">
   <section class="presentacion">
+    <div class="fondo-puntos" aria-hidden="true"></div>
     <div class="sol" aria-hidden="true"></div>
-    <div class="anillo" aria-hidden="true"></div>
+    <div class="halo" aria-hidden="true"></div>
 
     <div class="marca">
       <img src="logo.svg" alt="" class="marca-logo" />
@@ -12,8 +13,15 @@
     </div>
 
     <div class="lema animate__animated animate__fadeInUp">
-      <h1>Cada lote, del primer día hasta la venta.</h1>
+      <span class="etiqueta"><i class="pi pi-sun" aria-hidden="true"></i> Gestión avícola</span>
+      <h1>Cada lote, <em>del primer día</em> hasta la venta.</h1>
       <p>Galpones, alimentación, sanidad, costos y cartera en un solo lugar, con alertas cuando algo se sale de lo normal.</p>
+
+      <ul class="funciones">
+        <li><span class="icono"><i class="pi pi-home" aria-hidden="true"></i></span>Galpones y lotes</li>
+        <li><span class="icono"><i class="pi pi-chart-line" aria-hidden="true"></i></span>Seguimiento del peso</li>
+        <li><span class="icono"><i class="pi pi-wallet" aria-hidden="true"></i></span>Ventas y cartera</li>
+      </ul>
     </div>
 
     <div class="ciclo">
@@ -28,7 +36,7 @@
   </section>
 
   <section class="acceso">
-    <form [formGroup]="form" (ngSubmit)="onSubmit($event)" novalidate class="animate__animated animate__fadeIn">
+    <form [formGroup]="form" (ngSubmit)="onSubmit($event)" novalidate class="tarjeta animate__animated animate__fadeIn">
       <div class="titulo">
         <h2>Bienvenido de nuevo</h2>
         <p>Ingresa con tu usuario o tu correo.</p>
@@ -36,14 +44,18 @@
 
       <div class="field">
         <label for="usuario">Usuario o correo</label>
-        <input
-          id="usuario"
-          pInputText
-          type="text"
-          formControlName="usuario"
-          autocomplete="username"
-          [attr.aria-invalid]="f['usuario'].invalid && f['usuario'].touched"
-        />
+        <div class="con-icono">
+          <i class="pi pi-user" aria-hidden="true"></i>
+          <input
+            id="usuario"
+            pInputText
+            type="text"
+            formControlName="usuario"
+            autocomplete="username"
+            placeholder="tu.usuario o correo@ejemplo.com"
+            [attr.aria-invalid]="f['usuario'].invalid && f['usuario'].touched"
+          />
+        </div>
         <small class="err" *ngIf="f['usuario'].invalid && f['usuario'].touched">
           El usuario es obligatorio.
         </small>
@@ -51,14 +63,18 @@
 
       <div class="field">
         <label for="contrasena">Contraseña</label>
-        <p-password
-          inputId="contrasena"
-          formControlName="contrasena"
-          [toggleMask]="true"
-          [feedback]="false"
-          styleClass="clave"
-          autocomplete="current-password">
-        </p-password>
+        <div class="con-icono">
+          <i class="pi pi-lock" aria-hidden="true"></i>
+          <p-password
+            inputId="contrasena"
+            formControlName="contrasena"
+            [toggleMask]="true"
+            [feedback]="false"
+            styleClass="clave"
+            placeholder="••••••••"
+            autocomplete="current-password">
+          </p-password>
+        </div>
         <small class="err" *ngIf="f['contrasena'].invalid && f['contrasena'].touched">
           La contraseña es obligatoria.
         </small>
@@ -84,9 +100,12 @@
         {{ errorMsg }}
       </p>
 
-      <p class="registro">
-        ¿Quieres comprar pollos? <a routerLink="/registro">Crea tu cuenta de cliente</a>
-      </p>
+      <div class="separador"><span>¿Quieres comprar pollos?</span></div>
+
+      <a routerLink="/registro" class="btn-registro">
+        <i class="pi pi-user-plus" aria-hidden="true"></i>
+        Crea tu cuenta de cliente
+      </a>
     </form>
 
     <span class="copyright">

@@ -9,6 +9,10 @@ import { Login } from './login/login';
 import { Menu } from './menu/menu';
 import { Sidebar } from './sidebar/sidebar';
 import { Seguimiento } from './seguimiento/seguimiento';
+import { GraficoLinea } from './seguimiento/graficos/grafico-linea';
+import { GraficoBarras } from './seguimiento/graficos/grafico-barras';
+import { ErrorCampo } from './services/error-campo';
+import { CampoNumero } from './services/numero.directive';
 import { Usuarios } from './usuarios/usuarios';
 import { Roles } from './roles/roles';
 import { Permisos } from './permisos/permisos';
@@ -47,6 +51,10 @@ import { TokenInterceptor } from './services/token.interceptor';
     Menu,
     Sidebar,
     Seguimiento,
+    GraficoLinea,
+    GraficoBarras,
+    ErrorCampo,
+    CampoNumero,
     Usuarios,
     Roles,
     Permisos,

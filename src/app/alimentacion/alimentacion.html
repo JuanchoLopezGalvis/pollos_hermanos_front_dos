@@ -55,7 +55,8 @@
             </div>
             <div class="field">
               <label for="c-bultos">Bultos consumidos *</label>
-              <input id="c-bultos" pInputText type="number" step="0.5" min="0" formControlName="cantidadBultos" />
+              <input id="c-bultos" pInputText type="number" step="0.5" min="0.01" formControlName="cantidadBultos" />
+              <app-error-campo [control]="formConsumo.get('cantidadBultos')"></app-error-campo>
             </div>
           </div>
           <div class="form-actions">
@@ -91,10 +92,12 @@
             <div class="field">
               <label for="p-bultos">Bultos *</label>
               <input id="p-bultos" pInputText type="number" step="1" min="1" formControlName="cantidadBultos" />
+              <app-error-campo [control]="formCompra.get('cantidadBultos')"></app-error-campo>
             </div>
             <div class="field">
               <label for="p-costo">Costo por bulto (COP) *</label>
               <input id="p-costo" pInputText type="number" step="100" min="1" formControlName="costoUnitario" />
+              <app-error-campo [control]="formCompra.get('costoUnitario')"></app-error-campo>
             </div>
           </div>
           <div class="form-actions">
@@ -121,7 +124,8 @@
             </div>
             <div class="field">
               <label for="t-peso">Peso del bulto (kg)</label>
-              <input id="t-peso" pInputText type="number" step="0.5" formControlName="pesoBultoKg" />
+              <input id="t-peso" pInputText type="number" step="0.5" min="0.01" max="100" formControlName="pesoBultoKg" />
+              <app-error-campo [control]="formTipo.get('pesoBultoKg')"></app-error-campo>
             </div>
           </div>
           <div class="form-actions">

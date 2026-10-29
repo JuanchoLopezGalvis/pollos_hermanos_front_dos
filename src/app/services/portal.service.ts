@@ -52,6 +52,11 @@ export class PortalService {
     return this.http.get<PagoDTO[]>(`${this.base}/ventas/${idVenta}/pagos`);
   }
 
+  /** Todos los pagos del cliente, en todas sus compras, del más reciente al más antiguo. */
+  historialPagos(): Observable<PagoDTO[]> {
+    return this.http.get<PagoDTO[]>(`${this.base}/pagos`);
+  }
+
   iniciarPago(idVenta: number, monto: number, urlRetorno: string): Observable<CheckoutPagoDTO> {
     return this.http.post<CheckoutPagoDTO>(`${this.base}/ventas/${idVenta}/pago-en-linea`, { monto, urlRetorno });
   }

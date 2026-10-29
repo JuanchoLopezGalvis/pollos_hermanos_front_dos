@@ -54,6 +54,7 @@
             <div class="field">
               <label for="g-monto">Monto (COP) *</label>
               <input id="g-monto" pInputText type="number" step="100" min="1" formControlName="monto" />
+              <app-error-campo [control]="formGasto.get('monto')"></app-error-campo>
             </div>
             <div class="field field-full">
               <label for="g-desc">Descripción *</label>
@@ -97,6 +98,8 @@
               <input pInputText type="number" min="1" step="1" placeholder="Pollos" formControlName="avesBeneficiadas" aria-label="Pollos beneficiados" />
               <input pInputText type="number" min="1" step="50" placeholder="Tarifa por pollo" formControlName="tarifaPorAve" aria-label="Tarifa por pollo" />
               <p-button type="button" icon="pi pi-trash" severity="danger" [text]="true" ariaLabel="Quitar" (onClick)="quitarLinea(i)"></p-button>
+              <app-error-campo [control]="l.get('avesBeneficiadas')"></app-error-campo>
+              <app-error-campo [control]="l.get('tarifaPorAve')"></app-error-campo>
             </div>
           </div>
           <small class="ayuda" *ngIf="!beneficiadoras.length">No hay beneficiadoras activas: regístralas en Personal con el cargo "Beneficiadora".</small>
@@ -130,6 +133,7 @@
             <div class="field">
               <label for="i-monto">Monto (COP) *</label>
               <input id="i-monto" pInputText type="number" step="100" min="1" formControlName="monto" />
+              <app-error-campo [control]="formIngreso.get('monto')"></app-error-campo>
             </div>
             <div class="field field-full">
               <label for="i-desc">Descripción *</label>

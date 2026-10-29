@@ -5,6 +5,7 @@ import { MessageService } from 'primeng/api';
 import { ComercialService, ClienteDTO } from '../services/comercial.service';
 import { CatalogoService, CatalogoDTO } from '../services/catalogo.service';
 import { AuthService } from '../services/auth.service';
+import { PATRON_DOCUMENTO, PATRON_TELEFONO } from '../services/validaciones';
 import { mensajeError } from '../services/error-api';
 
 /** El cliente debe tener teléfono o correo de contacto (S29). */
@@ -66,10 +67,10 @@ export class Clientes implements OnInit {
   private crearFormulario(): FormGroup {
     return this.fb.group({
       idTipoCliente: [null, Validators.required],
-      documento: ['', [Validators.required, Validators.maxLength(20)]],
+      documento: ['', [Validators.required, Validators.maxLength(20), Validators.pattern(PATRON_DOCUMENTO)]],
       nombre: ['', [Validators.required, Validators.maxLength(120)]],
       direccion: ['', Validators.maxLength(200)],
-      telefono: ['', Validators.maxLength(20)],
+      telefono: ['', [Validators.maxLength(20), Validators.pattern(PATRON_TELEFONO)]],
       correo: ['', [Validators.email, Validators.maxLength(120)]],
       activo: [true]
     }, { validators: conContacto });
@@ -119,7 +120,7 @@ export class Clientes implements OnInit {
     }
     const v = this.form.value;
     const vacio = (x: string) => x?.trim() || null;
-    const dto = { ...v, idTipoCliente: Number(v.idTipoCliente), direccion: vacio(v.direccion), telefono: vacio(v.telefono), correo: vacio(v.correo) };
+    const dto = { ...v, documento: v.documento.trim(), idTipoCliente: Number(v.idTipoCliente), direccion: vacio(v.direccion), telefono: vacio(v.telefono), correo: vacio(v.correo) };
     this.guardando = true;
     const peticion = this.editando
       ? this.comercialSvc.actualizarCliente(this.editando.idCliente, dto)

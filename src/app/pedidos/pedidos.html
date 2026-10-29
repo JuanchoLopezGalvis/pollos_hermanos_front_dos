@@ -50,6 +50,7 @@
               <input pInputText type="number" min="1" step="1" placeholder="Aves" formControlName="cantidadAves" aria-label="Aves" />
               <span class="ayuda">{{ disponibles(l.value.idLote) !== null ? 'Disponibles: ' + disponibles(l.value.idLote) : '' }}</span>
               <p-button type="button" icon="pi pi-trash" severity="danger" [text]="true" ariaLabel="Quitar" (onClick)="quitarLinea(i)"></p-button>
+              <app-error-campo [control]="l.get('cantidadAves')"></app-error-campo>
             </div>
           </div>
           <small class="ayuda" *ngIf="!lotesListos.length">No hay lotes listos para venta. Cambia el estado del lote en Lotes.</small>
@@ -76,16 +77,19 @@
             </div>
             <div class="field">
               <label for="v-prom">Peso promedio por ave (lb)</label>
-              <input id="v-prom" pInputText type="number" step="0.01" min="0" formControlName="pesoPromedioLibras" (input)="calcularPesoTotal()" />
+              <input id="v-prom" pInputText type="number" step="0.01" min="0.01" max="20" formControlName="pesoPromedioLibras" (input)="calcularPesoTotal()" />
+              <app-error-campo [control]="formVenta.get('pesoPromedioLibras')"></app-error-campo>
               <small class="ayuda">Calcula el peso total con las {{ pedidoVenta.totalAves }} aves.</small>
             </div>
             <div class="field">
               <label for="v-peso">Peso total vendido (lb) *</label>
-              <input id="v-peso" pInputText type="number" step="0.01" min="0" formControlName="pesoTotalLibras" />
+              <input id="v-peso" pInputText type="number" step="0.01" min="0.01" formControlName="pesoTotalLibras" />
+              <app-error-campo [control]="formVenta.get('pesoTotalLibras')"></app-error-campo>
             </div>
             <div class="field">
               <label for="v-precio">Precio por libra (COP) *</label>
               <input id="v-precio" pInputText type="number" step="50" min="1" formControlName="precioLibra" />
+              <app-error-campo [control]="formVenta.get('precioLibra')"></app-error-campo>
             </div>
             <div class="field">
               <label for="v-limite">Fecha límite de pago</label>

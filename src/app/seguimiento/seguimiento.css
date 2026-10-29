@@ -27,54 +27,36 @@
   margin-top: 20px;
 }
 
-.curva {
-  display: flex;
-  align-items: flex-end;
-  gap: 14px;
-  height: 260px;
-  padding-top: 12px;
-  border-bottom: 1.5px solid var(--ph-borde);
-  overflow-x: auto;
+.selector-lote {
+  min-width: 200px;
+  min-height: 42px;
+  padding: 0 12px;
+  border: 1px solid var(--ph-borde);
+  border-radius: 12px;
+  background: var(--ph-superficie);
+  color: var(--ph-tinta);
+  font: inherit;
 }
 
-.barra {
-  flex: 1;
-  min-width: 56px;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 8px;
+.graficas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr));
+  gap: 0 24px;
 }
 
-.relleno {
-  width: 100%;
-  max-width: 72px;
-  min-height: 6px;
-  border-radius: 12px 12px 4px 4px;
-  background: var(--ph-verde-700);
-  transition: height 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+.graficas .card {
+  min-width: 0;
 }
 
-.barra:last-child .relleno {
-  background: var(--ph-yema);
-}
-
-.barra:hover .relleno {
-  background: var(--ph-verde-900);
-}
-
-.valor {
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: #33443a;
-  white-space: nowrap;
-}
-
-.semana {
-  font-size: 0.82rem;
+.ayuda-grafica {
+  margin: -10px 0 18px;
+  font-size: 0.88rem;
   color: var(--ph-texto-suave);
+}
+
+.titulo-tabla {
+  margin: 8px 0 12px;
+  font-size: 1.2rem;
 }
 
 @media (max-width: 600px) {

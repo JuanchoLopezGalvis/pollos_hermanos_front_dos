@@ -6,10 +6,11 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 import { AuthService } from '../services/auth.service';
 import { PortalService } from '../services/portal.service';
 import { ClienteDTO, PagoDTO, PedidoDTO, VentaDTO } from '../services/comercial.service';
+import { LIMITES, entero, hasta } from '../services/validaciones';
 import { mensajeError } from '../services/error-api';
 import { hoyISO } from '../navegacion';
 
-type Pestana = 'pedir' | 'pedidos' | 'compras';
+type Pestana = 'pedir' | 'pedidos' | 'compras' | 'historial';
 
 /** Cómo ve el cliente el estado de su pedido. */
 const ESTADOS_PEDIDO: Record<string, string> = {
@@ -28,7 +29,8 @@ const ESTADOS_VENTA: Record<string, string> = {
 
 /**
  * Portal del cliente: pide aves (el sistema elige los lotes), sigue sus
- * pedidos y paga sus compras con Wompi. Todo lo que muestra es suyo.
+ * pedidos, paga sus compras con Wompi (le llega el comprobante al correo) y
+ * consulta el historial de todo lo que ha pagado. Todo lo que muestra es suyo.
  */
 @Component({
   selector: 'app-portal',
@@ -44,6 +46,7 @@ export class Portal implements OnInit {
   pedidos: PedidoDTO[] = [];
   ventas: VentaDTO[] = [];
   pagos: PagoDTO[] = [];
+  historial: PagoDTO[] = [];
   seleccionada: VentaDTO | null = null;
   montoPago: number | null = null;
 
@@ -81,9 +84,19 @@ export class Portal implements OnInit {
     return this.ventas.reduce((t, v) => t + Number(v.saldo), 0);
   }
 
+  /** Lo que el cliente ha pagado en todas sus compras. */
+  get totalPagado(): number {
+    return this.historial.reduce((t, p) => t + Number(p.monto), 0);
+  }
+
+  /** Libras que pesa en promedio cada pollo de la compra. */
+  pesoPromedio(v: VentaDTO): number {
+    return v.cantidadAves ? Number(v.pesoTotalLibras) / v.cantidadAves : 0;
+  }
+
   ngOnInit(): void {
     const ver = this.route.snapshot.queryParamMap.get('ver') as Pestana | null;
-    if (ver === 'pedidos' || ver === 'compras') {
+    if (ver === 'pedidos' || ver === 'compras' || ver === 'historial') {
       this.pestana = ver;
     }
     this.portalSvc.perfil().subscribe({
@@ -95,7 +108,9 @@ export class Portal implements OnInit {
 
   private crearFormulario(): FormGroup {
     return this.fb.group({
-      cantidadAves: [null, [Validators.required, Validators.min(1), Validators.max(100000), Validators.pattern(/^\d+$/)]],
+      // No se piden más aves de las que hay listas para la venta.
+      cantidadAves: [null, [...entero(1, LIMITES.aves), hasta(() => this.avesDisponibles,
+        max => `Hoy solo hay ${max.toLocaleString('es-CO')} pollos disponibles.`)]],
       fechaEstimadaEntrega: [hoyISO(), Validators.required],
       observaciones: ['', Validators.maxLength(300)]
     });
@@ -108,6 +123,7 @@ export class Portal implements OnInit {
       error: () => this.avesDisponibles = null
     });
     this.portalSvc.pedidos().subscribe({ next: (p) => this.pedidos = p ?? [], error: () => this.pedidos = [] });
+    this.portalSvc.historialPagos().subscribe({ next: (h) => this.historial = h ?? [], error: () => this.historial = [] });
     this.portalSvc.ventas().pipe(finalize(() => this.cargando = false)).subscribe({
       next: (v) => {
         this.ventas = v ?? [];
@@ -174,6 +190,10 @@ export class Portal implements OnInit {
   pagar(): void {
     const v = this.seleccionada;
     if (!v || !this.montoPago || this.montoPago <= 0) return;
+    if (!Number.isInteger(Math.round(this.montoPago * 100 * 1e6) / 1e6)) {
+      this.messages.add({ severity: 'warn', summary: 'Monto no válido', detail: 'El monto admite máximo 2 decimales.' });
+      return;
+    }
     if (this.montoPago > Number(v.saldo)) {
       this.messages.add({ severity: 'warn', summary: 'Monto mayor que el saldo', detail: 'Puedes pagar como máximo lo que debes.' });
       return;

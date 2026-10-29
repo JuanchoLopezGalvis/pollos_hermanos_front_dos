@@ -5,6 +5,7 @@ import { MessageService, ConfirmationService } from 'primeng/api';
 import { PersonalService, EmpleadoDTO } from '../services/personal.service';
 import { CatalogoService, CatalogoDTO } from '../services/catalogo.service';
 import { AuthService } from '../services/auth.service';
+import { PATRON_DOCUMENTO, PATRON_TELEFONO } from '../services/validaciones';
 import { mensajeError } from '../services/error-api';
 import { hoyISO } from '../navegacion';
 
@@ -66,10 +67,10 @@ export class Personal implements OnInit {
 
   private crearFormulario(): FormGroup {
     return this.fb.group({
-      documento: ['', [Validators.required, Validators.maxLength(20)]],
+      documento: ['', [Validators.required, Validators.maxLength(20), Validators.pattern(PATRON_DOCUMENTO)]],
       nombres: ['', [Validators.required, Validators.maxLength(80)]],
       apellidos: ['', [Validators.required, Validators.maxLength(80)]],
-      telefono: ['', [Validators.maxLength(20)]],
+      telefono: ['', [Validators.maxLength(20), Validators.pattern(PATRON_TELEFONO)]],
       idCargo: [null, [Validators.required]],
       fechaIngreso: [this.hoy, [Validators.required]]
     });
@@ -112,7 +113,7 @@ export class Personal implements OnInit {
       return;
     }
     const v = this.form.getRawValue();
-    const dto = { ...v, idCargo: Number(v.idCargo), telefono: v.telefono?.trim() || null };
+    const dto = { ...v, documento: v.documento.trim(), idCargo: Number(v.idCargo), telefono: v.telefono?.trim() || null };
     this.guardando = true;
     const peticion = this.editando
       ? this.personalSvc.actualizar(this.editando.idEmpleado, dto)

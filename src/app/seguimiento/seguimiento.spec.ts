@@ -65,6 +65,36 @@ describe('Seguimiento', () => {
     expect(component.curva.length).toBe(1);
   });
 
+  it('calcula el peso, la ganancia diaria y la uniformidad del lote elegido', () => {
+    svc.obtenerPorLote.and.returnValue(of([
+      { id: 'a', codigoLote: 'L1', fecha: '2026-10-01', edadDias: 1, pesoPromedioGramos: 40 },
+      { id: 'b', codigoLote: 'L1', fecha: '2026-10-08', edadDias: 8, pesoPromedioGramos: 180,
+        muestreo: { avesPesadas: 50, uniformidadPorcentaje: 82 }, novedades: [{ tipo: 'Cama húmeda' }] },
+      { id: 'c', codigoLote: 'L1', fecha: '2026-10-08', edadDias: 8, pesoPromedioGramos: 200 }
+    ]));
+    component.elegirLote('L1');
+
+    expect(component.pesoPorDia).toEqual([
+      jasmine.objectContaining({ x: 1, y: 40 }), jasmine.objectContaining({ x: 8, y: 190 })
+    ]);
+    expect(component.indicadoresLote).toEqual({ pesoActual: 190, edadDias: 8, gananciaDiaria: 21.4, uniformidad: 82, novedades: 1 });
+    expect(component.semanas[0].etiqueta).toBe('Sem. 1');
+  });
+
+  it('sin lote muestra el último peso de cada lote y las novedades por tipo', () => {
+    svc.obtenerTodos.and.returnValue(of([
+      { id: 'a', codigoLote: 'L1', fecha: '2026-10-01', edadDias: 1, pesoPromedioGramos: 40, novedades: [{ tipo: 'Cama húmeda' }] },
+      { id: 'b', codigoLote: 'L1', fecha: '2026-10-08', edadDias: 8, pesoPromedioGramos: 180, novedades: [{ tipo: 'Cama húmeda' }] },
+      { id: 'c', codigoLote: 'L2', fecha: '2026-10-08', edadDias: 3, pesoPromedioGramos: 90, novedades: [{ tipo: 'Bebedero' }] }
+    ]));
+    component.limpiarFiltro();
+
+    expect(component.indicadoresGenerales).toEqual({ registros: 3, lotes: 2, muestreos: 0, novedades: 3 });
+    expect(component.pesoPorLote.map(b => [b.etiqueta, b.valor])).toEqual([['L1', 180], ['L2', 90]]);
+    expect(component.novedadesTipo.map(b => [b.etiqueta, b.valor])).toEqual([['Cama húmeda', 2], ['Bebedero', 1]]);
+    expect(component.codigosLote).toEqual(['L1', 'L2']);
+  });
+
   it('exige los dos campos del muestreo', () => {
     component.nuevo();
     component.form.patchValue({ codigoLote: 'L1', muestreo: { avesPesadas: 20 } });

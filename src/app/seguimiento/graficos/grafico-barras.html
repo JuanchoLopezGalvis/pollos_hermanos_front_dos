@@ -1,0 +1,36 @@
+<!-- Barras horizontales: una fila por categoría -->
+<ul class="barras" *ngIf="!columnas && datos.length">
+  <li *ngFor="let d of datos; let i = index" tabindex="0" [class.activa]="activa === i"
+      (pointerenter)="activa = i" (pointerleave)="activa = null" (focus)="activa = i" (blur)="activa = null"
+      [attr.aria-label]="d.etiqueta + ': ' + formato(d.valor) + ' ' + unidad + (d.detalle ? ', ' + d.detalle : '')">
+    <span class="categoria">{{ d.etiqueta }}</span>
+    <span class="pista">
+      <span class="relleno" [style.width.%]="porcentaje(d)"></span>
+      <span class="valor">{{ formato(d.valor) }} {{ unidad }}</span>
+    </span>
+    <span class="detalle" *ngIf="activa === i && d.detalle">{{ d.detalle }}</span>
+  </li>
+</ul>
+
+<!-- Columnas: una por semana -->
+<ng-container *ngIf="columnas && datos.length">
+  <div class="columnas">
+    <div class="columna" *ngFor="let d of datos; let i = index" tabindex="0" [class.activa]="activa === i"
+         (pointerenter)="activa = i" (pointerleave)="activa = null" (focus)="activa = i" (blur)="activa = null"
+         [attr.aria-label]="d.etiqueta + ': ' + formato(d.valor) + ' ' + unidad + (d.detalle ? ', ' + d.detalle : '')">
+      <span class="cuerpo">
+        <span class="valor">{{ formato(d.valor) }} {{ unidad }}</span>
+        <!-- Se descuenta el espacio del valor para que la barra más alta no se salga. -->
+        <span class="relleno" [style.height]="'calc((100% - 28px) * ' + porcentaje(d) / 100 + ')'"></span>
+      </span>
+      <span class="categoria">{{ d.etiqueta }}</span>
+    </div>
+  </div>
+  <p class="detalle-activo">
+    <ng-container *ngIf="activa !== null; else pista">
+      <strong>{{ datos[activa].etiqueta }}: {{ formato(datos[activa].valor) }} {{ unidad }}</strong>
+      <ng-container *ngIf="datos[activa].detalle"> · {{ datos[activa].detalle }}</ng-container>
+    </ng-container>
+    <ng-template #pista>Pasa el puntero sobre una columna para ver el detalle.</ng-template>
+  </p>
+</ng-container>
