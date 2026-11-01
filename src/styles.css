@@ -1,0 +1,588 @@
+/* Estilos globales de Los Pollos Hermanos, en rojo y negro. Los nombres de las variables (verde, yema) se conservan de la paleta anterior: "verde" es la escala negra/roja principal y "yema" el rojo de acento. Los componentes solo agregan lo propio de cada pantalla. */
+
+:root {
+  --ph-fondo: #f5f3f3;
+  --ph-superficie: #ffffff;
+  --ph-tinta: #141414;
+  --ph-verde-900: #141414;
+  --ph-verde-800: #232020;
+  --ph-verde-700: #b3121f;
+  --ph-verde-500: #d9505b;
+  --ph-verde-100: #fbe5e7;
+  --ph-yema: #e11d2e;
+  --ph-yema-suave: #fde3e5;
+  --ph-tomate: #b23a1b;
+  --ph-tomate-suave: #fbe1da;
+  --ph-texto-suave: #5e5858;
+  --ph-texto-claro: #c9c2c2;
+  --ph-linea: #ece7e7;
+  --ph-borde: #d8d0d0;
+  --ph-display: 'Bricolage Grotesque', 'Segoe UI', sans-serif;
+  --ph-cuerpo: 'Instrument Sans', -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --sidebar-width: 264px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  min-height: 100%;
+}
+
+body {
+  font-family: var(--ph-cuerpo);
+  background: var(--ph-fondo);
+  color: var(--ph-tinta);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+}
+
+h1, h2, h3 {
+  font-family: var(--ph-display);
+  letter-spacing: -0.02em;
+}
+
+:focus-visible {
+  outline: 3px solid var(--ph-yema);
+  outline-offset: 2px;
+}
+
+/* ---------- Distribución de las pantallas internas: menú lateral fijo y contenido ---------- */
+
+.body-wrapper {
+  min-height: 100vh;
+  background: var(--ph-fondo);
+}
+
+.glass-container {
+  display: flex;
+  min-height: 100vh;
+}
+
+.content {
+  flex: 1;
+  min-width: 0;
+  max-width: 1320px;
+  padding: 44px clamp(20px, 4vw, 56px) 64px;
+}
+
+.content header {
+  margin-bottom: 28px;
+}
+
+.content header h1 {
+  font-size: clamp(2rem, 3.4vw, 2.75rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  margin-bottom: 6px;
+}
+
+.content header p {
+  color: var(--ph-texto-suave);
+  font-size: 1.05rem;
+}
+
+/* ---------- Tarjetas y formularios ---------- */
+
+.card {
+  background: var(--ph-superficie);
+  border-radius: 24px;
+  padding: 28px;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 2px rgba(20, 20, 20, 0.04), 0 12px 32px -20px rgba(20, 20, 20, 0.25);
+}
+
+.card h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 18px;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+  margin-bottom: 24px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px 18px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field label {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.field input,
+.field textarea,
+.field select {
+  width: 100%;
+}
+
+.field textarea {
+  min-height: 88px;
+  resize: vertical;
+}
+
+.field-full {
+  grid-column: 1 / -1;
+}
+
+.err {
+  color: var(--ph-tomate);
+  font-size: 0.82rem;
+  font-weight: 500;
+}
+
+.form-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 24px;
+  flex-wrap: wrap;
+}
+
+.check-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px;
+}
+
+.check-list label {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: 12px;
+  background: var(--ph-fondo);
+  font-size: 0.92rem;
+  cursor: pointer;
+}
+
+.check-list input,
+.check input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--ph-verde-900);
+}
+
+/* ---------- Ajustes de PrimeNG ---------- */
+
+.p-inputtext {
+  min-height: 48px;
+  border-radius: 14px !important;
+  border-width: 1.5px !important;
+  font-family: var(--ph-cuerpo) !important;
+}
+
+.p-button {
+  min-height: 44px;
+  border-radius: 14px !important;
+  font-family: var(--ph-cuerpo) !important;
+  font-weight: 600 !important;
+}
+
+.p-button.p-button-warn:not(.p-button-text):not(.p-button-outlined) {
+  background: var(--ph-yema) !important;
+  border-color: var(--ph-yema) !important;
+  color: #ffffff !important;
+}
+
+.p-button.p-button-warn:not(.p-button-text):not(.p-button-outlined):hover {
+  background: #b3121f !important;
+  border-color: #b3121f !important;
+}
+
+/* ---------- Tablas ---------- */
+
+.table-wrapper {
+  overflow-x: auto;
+  background: var(--ph-superficie);
+  border-radius: 20px;
+  box-shadow: 0 1px 2px rgba(20, 20, 20, 0.04), 0 12px 32px -20px rgba(20, 20, 20, 0.25);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.data-table th,
+.data-table td {
+  padding: 14px 20px;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.data-table th {
+  color: var(--ph-texto-suave);
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.data-table tbody tr {
+  border-top: 1px solid var(--ph-linea);
+}
+
+.data-table tbody tr:hover {
+  background: #faf8f8;
+}
+
+.data-table .acciones {
+  white-space: nowrap;
+  text-align: right;
+}
+
+.chip {
+  display: inline-block;
+  padding: 3px 10px;
+  margin: 2px 4px 2px 0;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: var(--ph-yema-suave);
+  color: #8a1020;
+}
+
+.chip.rojo {
+  background: var(--ph-tomate-suave);
+  color: #9a2e12;
+}
+
+.chip.verde {
+  background: #e3f1e7;
+  color: #1f4630;
+}
+
+.loading,
+.no-data,
+.error {
+  padding: 40px 24px;
+  text-align: center;
+  color: var(--ph-texto-suave);
+  background: var(--ph-superficie);
+  border-radius: 20px;
+}
+
+.error {
+  color: #9a2e12;
+  background: var(--ph-tomate-suave);
+  font-weight: 500;
+}
+
+@media (max-width: 900px) {
+  .glass-container {
+    flex-direction: column;
+  }
+
+  .content {
+    padding: 28px 16px 48px;
+  }
+}
+
+/* ---------- Elementos compartidos de los módulos ---------- */
+
+.spacer {
+  flex: 1;
+}
+
+.ayuda {
+  color: var(--ph-texto-suave);
+  font-size: 0.8rem;
+}
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 20px;
+  padding: 4px;
+  border-radius: 14px;
+  background: var(--ph-linea);
+  width: fit-content;
+  max-width: 100%;
+}
+
+.tabs button {
+  border: 0;
+  padding: 8px 16px;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--ph-texto-suave);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.tabs button.activa {
+  background: var(--ph-superficie);
+  color: var(--ph-tinta);
+  box-shadow: 0 1px 3px rgba(20, 20, 20, 0.12);
+}
+
+.resumen {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.resumen .dato {
+  background: var(--ph-superficie);
+  border-radius: 18px;
+  padding: 16px 20px;
+  box-shadow: 0 1px 2px rgba(20, 20, 20, 0.04);
+}
+
+.resumen .dato strong {
+  display: block;
+  font-family: var(--ph-display);
+  font-size: 1.5rem;
+  color: var(--ph-verde-900);
+}
+
+.resumen .dato span {
+  font-size: 0.85rem;
+  color: var(--ph-texto-suave);
+}
+
+.chip.gris {
+  background: var(--ph-linea);
+  color: var(--ph-texto-suave);
+}
+
+.positivo {
+  color: var(--ph-verde-700);
+  font-weight: 700;
+}
+
+.negativo {
+  color: var(--ph-tomate);
+  font-weight: 700;
+}
+
+.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.lineas {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.linea {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr auto;
+  gap: 10px;
+  align-items: center;
+}
+
+/* El error de una línea ocupa toda la fila; vacío no deja espacio. */
+.linea app-error-campo {
+  grid-column: 1 / -1;
+}
+
+.linea app-error-campo:empty {
+  display: none;
+}
+
+@media (max-width: 720px) {
+  .linea {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.check-inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  font-size: 0.9rem;
+  color: var(--ph-texto-suave);
+  cursor: pointer;
+}
+
+.subtitulo {
+  margin: 22px 0 12px;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.data-table tr.subfila td {
+  padding-top: 6px;
+  padding-bottom: 6px;
+  font-size: 0.88rem;
+  color: var(--ph-texto-suave);
+  background: var(--ph-fondo);
+}
+
+.data-table tbody tr.activa {
+  background: var(--ph-yema-suave);
+}
+
+.balance-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 32px;
+}
+
+.barra-costo {
+  display: grid;
+  grid-template-columns: 170px 1fr 120px;
+  gap: 12px;
+  align-items: center;
+  padding: 6px 0;
+  font-size: 0.9rem;
+}
+
+.barra-costo.total {
+  border-top: 1px solid var(--ph-linea);
+  margin-top: 6px;
+  padding-top: 10px;
+}
+
+.barra-costo .pista {
+  height: 10px;
+  border-radius: 999px;
+  background: var(--ph-linea);
+  overflow: hidden;
+}
+
+.barra-costo .relleno {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--ph-verde-700);
+}
+
+.ficha {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px 16px;
+  font-size: 0.92rem;
+}
+
+.ficha dt {
+  color: var(--ph-texto-suave);
+}
+
+.ficha dd {
+  margin: 0;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 600px) {
+  .barra-costo {
+    grid-template-columns: 1fr 100px;
+  }
+
+  .barra-costo .pista {
+    display: none;
+  }
+}
+
+.encabezado-detalle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.encabezado-detalle h2 {
+  margin-bottom: 0;
+}
+
+.form-pago {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.pago-linea {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  align-items: center;
+  margin-top: 16px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: var(--ph-yema-suave);
+}
+
+.pago-linea p {
+  margin: 4px 0 0;
+}
+
+.pago-linea-texto {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 720px) {
+  .form-pago,
+  .pago-linea {
+    grid-template-columns: 1fr;
+  }
+}
+
+.salidas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.salida {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: var(--ph-fondo);
+}
+
+.salida span {
+  font-size: 0.85rem;
+  color: var(--ph-texto-suave);
+}
+
+.salida .chip {
+  width: fit-content;
+}
+
+.ocupacion {
+  height: 12px;
+  border-radius: 999px;
+  background: var(--ph-linea);
+  overflow: hidden;
+  margin-bottom: 18px;
+}
+
+.ocupacion .relleno {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--ph-yema);
+  transition: width 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
