@@ -1,0 +1,35 @@
+<aside class="sidebar">
+  <a routerLink="/menu" class="logo">
+    <img src="logo.svg" alt="" />
+    <span>Los Pollos<br />Hermanos</span>
+  </a>
+
+  <nav class="menu" aria-label="Menú principal">
+    <ul>
+      <li routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        <a routerLink="/menu"><i class="pi pi-compass" aria-hidden="true"></i><span>Inicio</span></a>
+      </li>
+    </ul>
+    <ng-container *ngFor="let s of secciones">
+      <ng-container *ngIf="visibles(s).length">
+        <h4 class="seccion">{{ s.titulo }}</h4>
+        <ul>
+          <li routerLinkActive="active" *ngFor="let m of visibles(s)">
+            <a [routerLink]="m.ruta"><i [class]="m.icono" aria-hidden="true"></i><span>{{ m.titulo }}</span></a>
+          </li>
+        </ul>
+      </ng-container>
+    </ng-container>
+  </nav>
+
+  <div class="profile">
+    <div class="avatar" aria-hidden="true">{{ iniciales }}</div>
+    <div class="user-info">
+      <h3>{{ auth.nombreVisible }}</h3>
+      <p>{{ cargo }}</p>
+    </div>
+    <button type="button" class="salir" title="Cerrar sesión" aria-label="Cerrar sesión" (click)="logout()">
+      <i class="pi pi-sign-out" aria-hidden="true"></i>
+    </button>
+  </div>
+</aside>

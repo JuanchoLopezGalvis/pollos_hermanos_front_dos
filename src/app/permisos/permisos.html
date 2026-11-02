@@ -1,0 +1,69 @@
+<div class="body-wrapper">
+  <div class="glass-container">
+    <app-sidebar></app-sidebar>
+
+    <main class="content">
+      <header>
+        <h1>Permisos</h1>
+        <p>Catálogo de permisos con la forma <code>modulo.accion</code>. Solo un superusuario puede modificarlo.</p>
+      </header>
+
+      <div class="toolbar" *ngIf="auth.esSuperusuario">
+        <span class="spacer"></span>
+        <p-button *ngIf="!mostrarFormulario" label="Nuevo permiso" icon="pi pi-plus" severity="warn" (onClick)="nuevo()"></p-button>
+      </div>
+
+      <section class="card animate__animated animate__fadeIn" *ngIf="mostrarFormulario">
+        <h2>{{ editandoId ? 'Editar permiso' : 'Crear permiso' }}</h2>
+
+        <form [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+          <div class="form-grid">
+            <div class="field">
+              <label for="codigo">Código *</label>
+              <input id="codigo" pInputText formControlName="codigo" placeholder="lote.crear" maxlength="80" />
+              <small class="err" *ngIf="f['codigo'].invalid && f['codigo'].touched">
+                Usa la forma modulo.accion, en minúsculas.
+              </small>
+            </div>
+            <div class="field">
+              <label for="descripcion">Descripción</label>
+              <input id="descripcion" pInputText formControlName="descripcion" maxlength="200" />
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <p-button type="button" label="Cancelar" severity="secondary" [outlined]="true" (onClick)="cancelar()"></p-button>
+            <p-button type="submit" [label]="editandoId ? 'Guardar cambios' : 'Crear'" icon="pi pi-check" [loading]="guardando"></p-button>
+          </div>
+        </form>
+      </section>
+
+      <div *ngIf="loading" class="loading">Buscando información...</div>
+      <div *ngIf="!loading && errorMsg" class="error">{{ errorMsg }}</div>
+
+      <div class="table-wrapper" *ngIf="!loading && !errorMsg && permisos.length">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Descripción</th>
+              <th *ngIf="auth.esSuperusuario"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let p of permisos">
+              <td><span class="chip">{{ p.codigo }}</span></td>
+              <td>{{ p.descripcion || '-' }}</td>
+              <td class="acciones" *ngIf="auth.esSuperusuario">
+                <p-button icon="pi pi-pencil" [text]="true" ariaLabel="Editar" (onClick)="editar(p)"></p-button>
+                <p-button icon="pi pi-trash" severity="danger" [text]="true" ariaLabel="Eliminar" (onClick)="eliminar(p)"></p-button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div *ngIf="!loading && !errorMsg && !permisos.length" class="no-data">No hay permisos registrados.</div>
+    </main>
+  </div>
+</div>

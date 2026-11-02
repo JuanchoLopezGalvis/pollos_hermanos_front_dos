@@ -1,0 +1,80 @@
+<div class="body-wrapper">
+  <div class="glass-container">
+    <app-sidebar></app-sidebar>
+
+    <main class="content">
+      <header>
+        <h1>Roles</h1>
+        <p>Agrupa permisos por cargo o responsabilidad y asígnalos a los usuarios.</p>
+      </header>
+
+      <div class="toolbar">
+        <span class="spacer"></span>
+        <p-button *ngIf="!mostrarFormulario" label="Nuevo rol" icon="pi pi-plus" severity="warn" (onClick)="nuevo()"></p-button>
+      </div>
+
+      <section class="card animate__animated animate__fadeIn" *ngIf="mostrarFormulario">
+        <h2>{{ editandoId ? 'Editar rol' : 'Crear rol' }}</h2>
+
+        <form [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+          <div class="form-grid">
+            <div class="field">
+              <label for="nombre">Nombre *</label>
+              <input id="nombre" pInputText formControlName="nombre" maxlength="60" />
+              <small class="err" *ngIf="f['nombre'].invalid && f['nombre'].touched">El nombre es obligatorio (máximo 60).</small>
+            </div>
+            <div class="field">
+              <label for="descripcion">Descripción</label>
+              <input id="descripcion" pInputText formControlName="descripcion" maxlength="200" />
+            </div>
+          </div>
+
+          <h3 class="subtitulo">Permisos</h3>
+          <div class="check-list">
+            <label *ngFor="let p of permisosDisponibles" [attr.title]="p.descripcion">
+              <input type="checkbox" [checked]="permisosSeleccionados.has(p.codigo)" (change)="alternar(p.codigo)" />
+              {{ p.codigo }}
+            </label>
+          </div>
+
+          <div class="form-actions">
+            <p-button type="button" label="Cancelar" severity="secondary" [outlined]="true" (onClick)="cancelar()"></p-button>
+            <p-button type="submit" [label]="editandoId ? 'Guardar cambios' : 'Crear'" icon="pi pi-check" [loading]="guardando"></p-button>
+          </div>
+        </form>
+      </section>
+
+      <div *ngIf="loading" class="loading">Buscando información...</div>
+      <div *ngIf="!loading && errorMsg" class="error">{{ errorMsg }}</div>
+
+      <div class="table-wrapper" *ngIf="!loading && !errorMsg && roles.length">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Descripción</th>
+              <th>Permisos</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let r of roles">
+              <td>{{ r.nombre }}</td>
+              <td>{{ r.descripcion || '-' }}</td>
+              <td>
+                <span class="chip" *ngFor="let p of r.permisos">{{ p }}</span>
+                <span *ngIf="!r.permisos?.length">-</span>
+              </td>
+              <td class="acciones">
+                <p-button icon="pi pi-pencil" [text]="true" ariaLabel="Editar" (onClick)="editar(r)"></p-button>
+                <p-button icon="pi pi-trash" severity="danger" [text]="true" ariaLabel="Eliminar" (onClick)="eliminar(r)"></p-button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div *ngIf="!loading && !errorMsg && !roles.length" class="no-data">No hay roles creados.</div>
+    </main>
+  </div>
+</div>
