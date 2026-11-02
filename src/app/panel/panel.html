@@ -1,0 +1,93 @@
+<div class="body-wrapper">
+  <div class="glass-container">
+    <app-sidebar></app-sidebar>
+
+    <main class="content">
+      <header>
+        <h1>Panel del galpón</h1>
+        <p>Producción escalonada: cada galpón aloja varios lotes de distintas edades. Cada lote se sigue por separado.</p>
+      </header>
+
+      <div class="resumen">
+        <div class="dato"><strong>{{ activos.length }}</strong><span>lotes activos</span></div>
+        <div class="dato"><strong>{{ avesAlojadas | number }}</strong><span>pollos vivos alojados</span></div>
+        <div class="dato"><strong>{{ muertesActivos | number }}</strong><span>muertes en lotes activos</span></div>
+        <div class="dato" *ngIf="veBalance"><strong [class.negativo]="gananciaAcumulada < 0">{{ gananciaAcumulada | currency:'COP':'$':'1.0-0' }}</strong><span>ganancia de lotes vendidos</span></div>
+      </div>
+
+      <section class="card" *ngIf="proximasSalidas.length">
+        <h2>Próximas salidas</h2>
+        <div class="salidas">
+          <div class="salida" *ngFor="let l of proximasSalidas">
+            <strong>{{ l.codigo }}</strong>
+            <span>{{ l.galpon }} · día {{ l.edadDias }}</span>
+            <span class="chip" [class.rojo]="diasParaSalida(l) < 0" [class.verde]="diasParaSalida(l) >= 0 && diasParaSalida(l) <= 7">
+              {{ l.fechaEstimadaVenta | date:'dd/MM' }} ·
+              {{ diasParaSalida(l) < 0 ? 'hace ' + (-diasParaSalida(l)) + ' días' : diasParaSalida(l) === 0 ? 'hoy' : 'en ' + diasParaSalida(l) + ' días' }}
+            </span>
+          </div>
+        </div>
+      </section>
+
+      <div *ngIf="cargando" class="loading">Cargando el panel...</div>
+      <div *ngIf="!cargando && errorMsg" class="error">{{ errorMsg }}</div>
+
+      <section class="card galpon-panel" *ngFor="let v of vistas">
+        <div class="encabezado-detalle">
+          <h2>{{ v.galpon.nombre }}</h2>
+          <span class="chip" [class.verde]="v.galpon.estado === 'OCUPADO'" [class.rojo]="v.galpon.estado === 'MANTENIMIENTO'">{{ v.galpon.estado | titlecase }}</span>
+          <span class="spacer"></span>
+          <span class="ayuda">{{ v.galpon.lotesActivos }} lotes · {{ v.galpon.avesAlojadas | number }} de {{ v.galpon.capacidadMaxima | number }} aves · libre {{ v.galpon.capacidadLibre | number }}</span>
+        </div>
+        <div class="ocupacion"><div class="relleno" [style.width.%]="ocupacionPct(v.galpon)"></div></div>
+
+        <div class="table-wrapper" *ngIf="v.activos.length">
+          <table class="data-table">
+            <thead>
+              <tr><th>Lote</th><th>Ingreso</th><th class="num">Edad</th><th class="num">Iniciales</th><th class="num">Vivos</th><th class="num">Muertos</th><th class="num">Alimento</th><th>Salida estimada</th><th>Estado</th></tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let l of v.activos">
+                <td><a routerLink="/lotes"><strong>{{ l.codigo }}</strong></a></td>
+                <td>{{ l.fechaIngreso | date:'dd/MM/yyyy' }}</td>
+                <td class="num">día {{ l.edadDias }}</td>
+                <td class="num">{{ l.cantidadInicial }}</td>
+                <td class="num">{{ l.avesDisponibles }}</td>
+                <td class="num"><span class="chip" [class.rojo]="l.alertaMortalidad" [class.verde]="!l.alertaMortalidad">{{ l.mortalidadAcumulada }} ({{ l.porcentajeMortalidad | number:'1.1-1' }} %)</span></td>
+                <td class="num">{{ l.consumoAlimentoBultos | number:'1.0-1' }} bultos</td>
+                <td>{{ l.fechaEstimadaVenta | date:'dd/MM/yyyy' }}</td>
+                <td><span class="chip" [class.verde]="l.estado === 'LISTO_PARA_VENTA'">{{ estados[l.estado] }}</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="ayuda" *ngIf="!v.activos.length">Sin lotes activos.</p>
+
+        <ng-container *ngIf="v.terminados.length">
+          <h3 class="subtitulo">Lotes terminados</h3>
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead><tr><th>Lote</th><th class="num">Iniciales</th><th class="num">Vendidos</th><th class="num">Muertos</th><th class="num" *ngIf="veBalance">Peso promedio</th><th class="num" *ngIf="veBalance">Ingresos</th><th class="num" *ngIf="veBalance">Costos</th><th class="num" *ngIf="veBalance">Ganancia</th></tr></thead>
+              <tbody>
+                <tr *ngFor="let l of v.terminados">
+                  <td><strong>{{ l.codigo }}</strong> <span class="chip gris">{{ estados[l.estado] }}</span></td>
+                  <td class="num">{{ l.cantidadInicial }}</td>
+                  <td class="num">{{ l.avesVendidas }}</td>
+                  <td class="num">{{ l.mortalidadAcumulada }}</td>
+                  <ng-container *ngIf="veBalance">
+                    <td class="num">{{ balance[l.id]?.pesoPromedioLibras != null ? (balance[l.id].pesoPromedioLibras | number:'1.0-2') + ' lb' : '-' }}</td>
+                    <td class="num">{{ balance[l.id]?.ingresoTotal | currency:'COP':'$':'1.0-0' }}</td>
+                    <td class="num">{{ balance[l.id]?.costoTotal | currency:'COP':'$':'1.0-0' }}</td>
+                    <td class="num" [class.positivo]="(balance[l.id]?.ganancia ?? 0) >= 0" [class.negativo]="(balance[l.id]?.ganancia ?? 0) < 0">{{ balance[l.id]?.ganancia | currency:'COP':'$':'1.0-0' }}</td>
+                  </ng-container>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </ng-container>
+      </section>
+
+      <div *ngIf="!cargando && !errorMsg && !vistas.length" class="no-data">No hay galpones registrados.</div>
+    </main>
+  </div>
+</div>
