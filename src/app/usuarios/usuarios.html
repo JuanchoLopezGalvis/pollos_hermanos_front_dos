@@ -1,0 +1,129 @@
+<div class="body-wrapper">
+  <div class="glass-container">
+    <app-sidebar></app-sidebar>
+
+    <main class="content">
+      <header>
+        <h1>Usuarios</h1>
+        <p>Cuentas del sistema, roles asignados y permisos directos.</p>
+      </header>
+
+      <div class="toolbar">
+        <div class="field">
+          <label for="buscar">Buscar</label>
+          <input id="buscar" pInputText type="text" placeholder="Usuario, correo o nombre" [(ngModel)]="busqueda" />
+        </div>
+        <span class="spacer"></span>
+        <p-button *ngIf="!mostrarFormulario" label="Nuevo usuario" icon="pi pi-user-plus" severity="warn"
+                  (onClick)="nuevo()"></p-button>
+      </div>
+
+      <section class="card animate__animated animate__fadeIn" *ngIf="mostrarFormulario">
+        <h2>{{ editandoId ? 'Editar usuario' : 'Crear usuario' }}</h2>
+
+        <form [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+          <div class="form-grid">
+            <div class="field">
+              <label for="nombreUsuario">Nombre de usuario *</label>
+              <input id="nombreUsuario" pInputText formControlName="nombreUsuario" autocomplete="off" />
+              <small class="err" *ngIf="f['nombreUsuario'].invalid && f['nombreUsuario'].touched">Entre 3 y 50 caracteres.</small>
+            </div>
+            <div class="field">
+              <label for="correo">Correo *</label>
+              <input id="correo" pInputText type="email" formControlName="correo" autocomplete="off" />
+              <small class="err" *ngIf="f['correo'].invalid && f['correo'].touched">Ingresa un correo válido.</small>
+            </div>
+            <div class="field">
+              <label for="contrasena">{{ editandoId ? 'Nueva contraseña (opcional)' : 'Contraseña *' }}</label>
+              <input id="contrasena" pInputText type="password" formControlName="contrasena" autocomplete="new-password" />
+              <small class="err" *ngIf="f['contrasena'].invalid && f['contrasena'].touched">Entre 8 y 72 caracteres.</small>
+            </div>
+            <div class="field">
+              <label for="nombres">Nombres</label>
+              <input id="nombres" pInputText formControlName="nombres" />
+            </div>
+            <div class="field">
+              <label for="apellidos">Apellidos</label>
+              <input id="apellidos" pInputText formControlName="apellidos" />
+            </div>
+            <div class="field marcas">
+              <label class="check"><input type="checkbox" formControlName="activo" /> Activo</label>
+              <label class="check" *ngIf="auth.esSuperusuario">
+                <input type="checkbox" formControlName="superusuario" /> Superusuario
+              </label>
+            </div>
+          </div>
+
+          <h3 class="subtitulo">Roles</h3>
+          <p class="nota" *ngIf="rolesNoVisibles">No tienes permiso para consultar los roles; se conservarán los actuales.</p>
+          <p class="nota" *ngIf="!rolesNoVisibles && !rolesDisponibles.length">No hay roles creados.</p>
+          <div class="check-list">
+            <label *ngFor="let r of rolesDisponibles">
+              <input type="checkbox" [checked]="rolesSeleccionados.has(r)" (change)="alternar(rolesSeleccionados, r)" />
+              {{ r }}
+            </label>
+          </div>
+
+          <h3 class="subtitulo">Permisos directos</h3>
+          <div class="check-list">
+            <label *ngFor="let p of permisosDisponibles" [attr.title]="p.descripcion">
+              <input type="checkbox" [checked]="permisosSeleccionados.has(p.codigo)"
+                     (change)="alternar(permisosSeleccionados, p.codigo)" />
+              {{ p.codigo }}
+            </label>
+          </div>
+
+          <div class="form-actions">
+            <p-button type="button" label="Cancelar" severity="secondary" [outlined]="true" (onClick)="cancelar()"></p-button>
+            <p-button type="submit" [label]="editandoId ? 'Guardar cambios' : 'Crear'" icon="pi pi-check"
+                      [loading]="guardando"></p-button>
+          </div>
+        </form>
+      </section>
+
+      <div *ngIf="loading" class="loading">Buscando información...</div>
+      <div *ngIf="!loading && errorMsg" class="error">{{ errorMsg }}</div>
+
+      <div class="table-wrapper" *ngIf="!loading && !errorMsg && filtrados.length">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Usuario</th>
+              <th>Nombre</th>
+              <th>Correo</th>
+              <th>Roles</th>
+              <th>Estado</th>
+              <th>Último ingreso</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let u of filtrados">
+              <td>
+                {{ u.nombreUsuario }}
+                <span class="chip rojo" *ngIf="u.superusuario">super</span>
+              </td>
+              <td>{{ nombreCompleto(u) }}</td>
+              <td>{{ u.correo }}</td>
+              <td>
+                <span class="chip" *ngFor="let r of u.roles">{{ r }}</span>
+                <span *ngIf="!u.roles?.length">-</span>
+              </td>
+              <td>
+                <span class="chip" [class.verde]="u.activo" [class.rojo]="!u.activo">{{ u.activo ? 'Activo' : 'Inactivo' }}</span>
+              </td>
+              <td>{{ u.ultimoIngreso ? (u.ultimoIngreso | date:'dd/MM/yyyy HH:mm') : 'Nunca' }}</td>
+              <td class="acciones">
+                <p-button icon="pi pi-pencil" [text]="true" ariaLabel="Editar" (onClick)="editar(u)"></p-button>
+                <p-button *ngIf="u.activo" icon="pi pi-ban" severity="danger" [text]="true" ariaLabel="Desactivar"
+                          (onClick)="desactivar(u)"></p-button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div *ngIf="!loading && !errorMsg && !filtrados.length" class="no-data">No hay usuarios para mostrar.</div>
+    </main>
+  </div>
+</div>

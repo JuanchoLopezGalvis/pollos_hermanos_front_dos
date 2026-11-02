@@ -1,0 +1,29 @@
+.spacer {
+  flex: 1;
+}
+
+.subtitulo {
+  font-weight: 700;
+  margin: 22px 0 10px;
+  font-size: 0.95rem;
+  color: var(--ph-tinta);
+}
+
+.nota {
+  color: var(--ph-texto-suave);
+  font-size: 0.85rem;
+  margin-bottom: 8px;
+}
+
+.marcas {
+  flex-direction: row;
+  align-items: flex-end;
+  gap: 20px;
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}

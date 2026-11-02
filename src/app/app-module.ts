@@ -6,8 +6,13 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { AppRoutingModule } from './app-routing-module';
 import { App } from './app';
 import { Login } from './login/login';
+import { Menu } from './menu/menu';
+import { Sidebar } from './sidebar/sidebar';
 import { ErrorCampo } from './services/error-campo';
 import { CampoNumero } from './services/numero.directive';
+import { Usuarios } from './usuarios/usuarios';
+import { Roles } from './roles/roles';
+import { Permisos } from './permisos/permisos';
 
 import { providePrimeNG } from 'primeng/config';
 import { TemaPollos } from './tema';
@@ -25,8 +30,13 @@ import { TokenInterceptor } from './services/token.interceptor';
   declarations: [
     App,
     Login,
+    Menu,
+    Sidebar,
     ErrorCampo,
-    CampoNumero
+    CampoNumero,
+    Usuarios,
+    Roles,
+    Permisos
   ],
   imports: [
     BrowserModule,
