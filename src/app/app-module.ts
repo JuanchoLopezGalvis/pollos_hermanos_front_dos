@@ -13,6 +13,7 @@ import { CampoNumero } from './services/numero.directive';
 import { Usuarios } from './usuarios/usuarios';
 import { Roles } from './roles/roles';
 import { Permisos } from './permisos/permisos';
+import { Galpones } from './galpones/galpones';
 
 import { providePrimeNG } from 'primeng/config';
 import { TemaPollos } from './tema';
@@ -36,7 +37,8 @@ import { TokenInterceptor } from './services/token.interceptor';
     CampoNumero,
     Usuarios,
     Roles,
-    Permisos
+    Permisos,
+    Galpones
   ],
   imports: [
     BrowserModule,

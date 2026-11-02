@@ -6,6 +6,7 @@ import { Menu } from './menu/menu';
 import { Usuarios } from './usuarios/usuarios';
 import { Roles } from './roles/roles';
 import { Permisos } from './permisos/permisos';
+import { Galpones } from './galpones/galpones';
 import { permisosDe } from './navegacion';
 
 import { Protection } from './protection/protection';
@@ -16,6 +17,13 @@ const routes: Routes = [
   { path: 'login', component: Login },
 
   { path: 'menu', component: Menu, canActivate: [Protection] },
+
+  {
+    path: 'galpones',
+    component: Galpones,
+    canActivate: [Protection],
+    data: { permisos: permisosDe('/galpones') }
+  },
 
   {
     path: 'usuarios',
