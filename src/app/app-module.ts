@@ -16,6 +16,8 @@ import { Permisos } from './permisos/permisos';
 import { Galpones } from './galpones/galpones';
 import { Lotes } from './lotes/lotes';
 import { Panel } from './panel/panel';
+import { Personal } from './personal/personal';
+import { Proveedores } from './proveedores/proveedores';
 
 import { providePrimeNG } from 'primeng/config';
 import { TemaPollos } from './tema';
@@ -42,7 +44,9 @@ import { TokenInterceptor } from './services/token.interceptor';
     Permisos,
     Galpones,
     Lotes,
-    Panel
+    Panel,
+    Personal,
+    Proveedores
   ],
   imports: [
     BrowserModule,
