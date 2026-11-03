@@ -18,6 +18,8 @@ import { Lotes } from './lotes/lotes';
 import { Panel } from './panel/panel';
 import { Personal } from './personal/personal';
 import { Proveedores } from './proveedores/proveedores';
+import { Alimentacion } from './alimentacion/alimentacion';
+import { Sanidad } from './sanidad/sanidad';
 
 import { providePrimeNG } from 'primeng/config';
 import { TemaPollos } from './tema';
@@ -46,7 +48,9 @@ import { TokenInterceptor } from './services/token.interceptor';
     Lotes,
     Panel,
     Personal,
-    Proveedores
+    Proveedores,
+    Alimentacion,
+    Sanidad
   ],
   imports: [
     BrowserModule,

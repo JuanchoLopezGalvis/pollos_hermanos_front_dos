@@ -11,6 +11,8 @@ import { Lotes } from './lotes/lotes';
 import { Panel } from './panel/panel';
 import { Personal } from './personal/personal';
 import { Proveedores } from './proveedores/proveedores';
+import { Alimentacion } from './alimentacion/alimentacion';
+import { Sanidad } from './sanidad/sanidad';
 import { permisosDe } from './navegacion';
 
 import { Protection } from './protection/protection';
@@ -38,6 +40,18 @@ const routes: Routes = [
     component: Proveedores,
     canActivate: [Protection],
     data: { permisos: permisosDe('/proveedores') }
+  },
+  {
+    path: 'alimentacion',
+    component: Alimentacion,
+    canActivate: [Protection],
+    data: { permisos: permisosDe('/alimentacion') }
+  },
+  {
+    path: 'sanidad',
+    component: Sanidad,
+    canActivate: [Protection],
+    data: { permisos: permisosDe('/sanidad') }
   },
 
   {
