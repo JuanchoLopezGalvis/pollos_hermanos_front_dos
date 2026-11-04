@@ -18,8 +18,11 @@ import { Balance } from './balance/balance';
 import { Clientes } from './clientes/clientes';
 import { Pedidos } from './pedidos/pedidos';
 import { Ventas } from './ventas/ventas';
+import { PagoResultado } from './pago-resultado/pago-resultado';
 import { Registro } from './registro/registro';
+import { Portal } from './portal/portal';
 import { permisosDe } from './navegacion';
+import { PERMISO_PORTAL } from './services/auth.service';
 
 import { Protection } from './protection/protection';
 
@@ -28,6 +31,14 @@ const routes: Routes = [
 
   { path: 'login', component: Login },
   { path: 'registro', component: Registro },
+
+  // Portal de clientes: lo único a lo que entra una cuenta de cliente.
+  {
+    path: 'portal',
+    component: Portal,
+    canActivate: [Protection],
+    data: { permisos: [PERMISO_PORTAL], portal: true }
+  },
 
   { path: 'menu', component: Menu, canActivate: [Protection] },
   {
@@ -90,7 +101,12 @@ const routes: Routes = [
     canActivate: [Protection],
     data: { permisos: permisosDe('/ventas') }
   },
-
+  {
+    path: 'pago-resultado',
+    component: PagoResultado,
+    canActivate: [Protection],
+    data: { permisos: [PERMISO_PORTAL], portal: true }
+  },
   {
     path: 'galpones',
     component: Galpones,

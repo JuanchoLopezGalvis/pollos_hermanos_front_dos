@@ -25,7 +25,9 @@ import { Balance } from './balance/balance';
 import { Clientes } from './clientes/clientes';
 import { Pedidos } from './pedidos/pedidos';
 import { Ventas } from './ventas/ventas';
+import { PagoResultado } from './pago-resultado/pago-resultado';
 import { Registro } from './registro/registro';
+import { Portal } from './portal/portal';
 
 import { providePrimeNG } from 'primeng/config';
 import { TemaPollos } from './tema';
@@ -62,7 +64,9 @@ import { TokenInterceptor } from './services/token.interceptor';
     Clientes,
     Pedidos,
     Ventas,
-    Registro
+    PagoResultado,
+    Registro,
+    Portal
   ],
   imports: [
     BrowserModule,
