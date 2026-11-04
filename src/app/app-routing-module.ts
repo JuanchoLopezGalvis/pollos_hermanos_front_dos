@@ -13,6 +13,11 @@ import { Personal } from './personal/personal';
 import { Proveedores } from './proveedores/proveedores';
 import { Alimentacion } from './alimentacion/alimentacion';
 import { Sanidad } from './sanidad/sanidad';
+import { Gastos } from './gastos/gastos';
+import { Balance } from './balance/balance';
+import { Clientes } from './clientes/clientes';
+import { Pedidos } from './pedidos/pedidos';
+import { Ventas } from './ventas/ventas';
 import { permisosDe } from './navegacion';
 
 import { Protection } from './protection/protection';
@@ -52,6 +57,36 @@ const routes: Routes = [
     component: Sanidad,
     canActivate: [Protection],
     data: { permisos: permisosDe('/sanidad') }
+  },
+  {
+    path: 'gastos',
+    component: Gastos,
+    canActivate: [Protection],
+    data: { permisos: permisosDe('/gastos') }
+  },
+  {
+    path: 'balance',
+    component: Balance,
+    canActivate: [Protection],
+    data: { permisos: permisosDe('/balance') }
+  },
+  {
+    path: 'clientes',
+    component: Clientes,
+    canActivate: [Protection],
+    data: { permisos: permisosDe('/clientes') }
+  },
+  {
+    path: 'pedidos',
+    component: Pedidos,
+    canActivate: [Protection],
+    data: { permisos: permisosDe('/pedidos') }
+  },
+  {
+    path: 'ventas',
+    component: Ventas,
+    canActivate: [Protection],
+    data: { permisos: permisosDe('/ventas') }
   },
 
   {

@@ -1,0 +1,79 @@
+<div class="body-wrapper">
+  <div class="glass-container">
+    <app-sidebar></app-sidebar>
+
+    <main class="content">
+      <header>
+        <h1>Balance por lote</h1>
+        <p>Ganancia neta = ingresos totales − costos totales. Los gastos generales de la finca no se reparten entre lotes.</p>
+      </header>
+
+      <div class="resumen" *ngIf="lotes.length">
+        <div class="dato"><strong>{{ ingresoTotal | currency:'COP':'$':'1.0-0' }}</strong><span>ingresos</span></div>
+        <div class="dato"><strong>{{ costoTotal | currency:'COP':'$':'1.0-0' }}</strong><span>costos</span></div>
+        <div class="dato"><strong [class.negativo]="gananciaTotal < 0">{{ gananciaTotal | currency:'COP':'$':'1.0-0' }}</strong><span>ganancia de lotes con ventas</span></div>
+        <div class="dato" *ngIf="mejorLote"><strong>{{ mejorLote.codigo }}</strong><span>lote con mejor resultado</span></div>
+      </div>
+
+      <div class="toolbar">
+        <label class="check-inline"><input type="checkbox" [(ngModel)]="soloVendidos" /> Solo lotes con ventas</label>
+      </div>
+
+      <section class="card animate__animated animate__fadeIn" *ngIf="seleccionado">
+        <h2>Lote {{ seleccionado.codigo }}</h2>
+        <div class="balance-grid">
+          <div>
+            <h3 class="subtitulo">Costos</h3>
+            <div class="barra-costo" *ngFor="let c of componentes">
+              <span>{{ c.nombre }}</span>
+              <div class="pista"><div class="relleno" [style.width.%]="c.porcentaje"></div></div>
+              <strong class="num">{{ c.valor | currency:'COP':'$':'1.0-0' }}</strong>
+            </div>
+            <div class="barra-costo total"><span>Costo total</span><span></span><strong class="num">{{ seleccionado.costoTotal | currency:'COP':'$':'1.0-0' }}</strong></div>
+          </div>
+          <div>
+            <h3 class="subtitulo">Salida y venta</h3>
+            <dl class="ficha">
+              <dt>Aves vendidas</dt><dd>{{ seleccionado.avesVendidas }}</dd>
+              <dt>Libras vendidas</dt><dd>{{ seleccionado.librasVendidas | number:'1.0-2' }} lb</dd>
+              <dt>Peso promedio de salida</dt><dd>{{ seleccionado.pesoPromedioLibras != null ? (seleccionado.pesoPromedioLibras | number:'1.0-2') + ' lb' : '-' }}</dd>
+              <dt>Precio promedio por libra</dt><dd>{{ seleccionado.precioPromedioLibra != null ? (seleccionado.precioPromedioLibra | currency:'COP':'$':'1.0-0') : '-' }}</dd>
+              <dt>Costo por libra</dt><dd>{{ seleccionado.costoPorLibra != null ? (seleccionado.costoPorLibra | currency:'COP':'$':'1.0-0') : '-' }}</dd>
+              <dt>Ingreso por ventas</dt><dd>{{ seleccionado.ingresoVentas | currency:'COP':'$':'1.0-0' }}</dd>
+              <dt>Otros ingresos</dt><dd>{{ seleccionado.otrosIngresos | currency:'COP':'$':'1.0-0' }}</dd>
+              <dt>Ganancia neta</dt>
+              <dd *ngIf="tieneResultado(seleccionado)"><strong [class.positivo]="seleccionado.ganancia >= 0" [class.negativo]="seleccionado.ganancia < 0">{{ seleccionado.ganancia | currency:'COP':'$':'1.0-0' }}</strong>
+                <span class="ayuda" *ngIf="seleccionado.margenPorcentaje != null"> ({{ seleccionado.margenPorcentaje }} %)</span></dd>
+              <dd *ngIf="!tieneResultado(seleccionado)"><span class="chip gris">En curso</span> <span class="ayuda">costo acumulado {{ seleccionado.costoTotal | currency:'COP':'$':'1.0-0' }}</span></dd>
+            </dl>
+          </div>
+        </div>
+      </section>
+
+      <div *ngIf="loading" class="loading">Buscando información...</div>
+      <div *ngIf="!loading && errorMsg" class="error">{{ errorMsg }}</div>
+
+      <div class="table-wrapper" *ngIf="!loading && !errorMsg && visibles.length">
+        <table class="data-table">
+          <thead>
+            <tr><th>Lote</th><th>Estado</th><th class="num">Costos</th><th class="num">Aves vendidas</th><th class="num">Libras</th><th class="num">Ingresos</th><th class="num">Ganancia</th><th></th></tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let l of visibles" [class.activa]="seleccionado?.idLote === l.idLote">
+              <td><strong>{{ l.codigo }}</strong></td>
+              <td>{{ estados[l.estado] || l.estado }}</td>
+              <td class="num">{{ l.costoTotal | currency:'COP':'$':'1.0-0' }}</td>
+              <td class="num">{{ l.avesVendidas }}</td>
+              <td class="num">{{ l.librasVendidas | number:'1.0-0' }}</td>
+              <td class="num">{{ l.ingresoTotal | currency:'COP':'$':'1.0-0' }}</td>
+              <td class="num" *ngIf="tieneResultado(l)" [class.positivo]="l.ganancia >= 0" [class.negativo]="l.ganancia < 0">{{ l.ganancia | currency:'COP':'$':'1.0-0' }}</td>
+              <td class="num" *ngIf="!tieneResultado(l)"><span class="chip gris">En curso</span></td>
+              <td class="acciones"><p-button icon="pi pi-eye" [text]="true" ariaLabel="Ver balance" (onClick)="seleccionar(l)"></p-button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div *ngIf="!loading && !errorMsg && !visibles.length" class="no-data">No hay lotes para mostrar.</div>
+    </main>
+  </div>
+</div>
