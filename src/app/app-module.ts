@@ -23,6 +23,8 @@ import { Sanidad } from './sanidad/sanidad';
 import { Gastos } from './gastos/gastos';
 import { Balance } from './balance/balance';
 import { Clientes } from './clientes/clientes';
+import { Pedidos } from './pedidos/pedidos';
+import { Ventas } from './ventas/ventas';
 
 import { providePrimeNG } from 'primeng/config';
 import { TemaPollos } from './tema';
@@ -56,7 +58,9 @@ import { TokenInterceptor } from './services/token.interceptor';
     Sanidad,
     Gastos,
     Balance,
-    Clientes
+    Clientes,
+    Pedidos,
+    Ventas
   ],
   imports: [
     BrowserModule,
