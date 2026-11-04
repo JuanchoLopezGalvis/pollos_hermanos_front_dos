@@ -18,6 +18,7 @@ import { Balance } from './balance/balance';
 import { Clientes } from './clientes/clientes';
 import { Pedidos } from './pedidos/pedidos';
 import { Ventas } from './ventas/ventas';
+import { Registro } from './registro/registro';
 import { permisosDe } from './navegacion';
 
 import { Protection } from './protection/protection';
@@ -26,6 +27,7 @@ const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
 
   { path: 'login', component: Login },
+  { path: 'registro', component: Registro },
 
   { path: 'menu', component: Menu, canActivate: [Protection] },
   {
