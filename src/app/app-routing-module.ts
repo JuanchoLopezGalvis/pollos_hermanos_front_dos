@@ -3,6 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 
 import { Login } from './login/login';
 import { Menu } from './menu/menu';
+import { Seguimiento } from './seguimiento/seguimiento';
 import { Usuarios } from './usuarios/usuarios';
 import { Roles } from './roles/roles';
 import { Permisos } from './permisos/permisos';
@@ -21,6 +22,7 @@ import { Ventas } from './ventas/ventas';
 import { PagoResultado } from './pago-resultado/pago-resultado';
 import { Registro } from './registro/registro';
 import { Portal } from './portal/portal';
+import { Auditoria } from './auditoria/auditoria';
 import { permisosDe } from './navegacion';
 import { PERMISO_PORTAL } from './services/auth.service';
 
@@ -119,7 +121,12 @@ const routes: Routes = [
     canActivate: [Protection],
     data: { permisos: permisosDe('/lotes') }
   },
-
+  {
+    path: 'seguimiento',
+    component: Seguimiento,
+    canActivate: [Protection],
+    data: { permisos: permisosDe('/seguimiento') }
+  },
   {
     path: 'usuarios',
     component: Usuarios,
@@ -137,6 +144,12 @@ const routes: Routes = [
     component: Permisos,
     canActivate: [Protection],
     data: { permisos: permisosDe('/permisos') }
+  },
+  {
+    path: 'auditoria',
+    component: Auditoria,
+    canActivate: [Protection],
+    data: { permisos: permisosDe('/auditoria') }
   },
 
   { path: '**', redirectTo: '/login' }

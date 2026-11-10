@@ -8,6 +8,9 @@ import { App } from './app';
 import { Login } from './login/login';
 import { Menu } from './menu/menu';
 import { Sidebar } from './sidebar/sidebar';
+import { Seguimiento } from './seguimiento/seguimiento';
+import { GraficoLinea } from './seguimiento/graficos/grafico-linea';
+import { GraficoBarras } from './seguimiento/graficos/grafico-barras';
 import { ErrorCampo } from './services/error-campo';
 import { CampoNumero } from './services/numero.directive';
 import { Usuarios } from './usuarios/usuarios';
@@ -28,6 +31,7 @@ import { Ventas } from './ventas/ventas';
 import { PagoResultado } from './pago-resultado/pago-resultado';
 import { Registro } from './registro/registro';
 import { Portal } from './portal/portal';
+import { Auditoria } from './auditoria/auditoria';
 
 import { providePrimeNG } from 'primeng/config';
 import { TemaPollos } from './tema';
@@ -47,6 +51,9 @@ import { TokenInterceptor } from './services/token.interceptor';
     Login,
     Menu,
     Sidebar,
+    Seguimiento,
+    GraficoLinea,
+    GraficoBarras,
     ErrorCampo,
     CampoNumero,
     Usuarios,
@@ -66,7 +73,8 @@ import { TokenInterceptor } from './services/token.interceptor';
     Ventas,
     PagoResultado,
     Registro,
-    Portal
+    Portal,
+    Auditoria
   ],
   imports: [
     BrowserModule,
