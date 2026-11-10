@@ -1,0 +1,33 @@
+<div class="grafico" *ngIf="ordenados.length">
+  <svg [attr.width]="ancho" [attr.height]="alto" role="img" tabindex="0"
+       [attr.aria-label]="descripcion + ': ' + ordenados.length + ' puntos, último ' + formato(ultimo!.y) + ' ' + unidad + ' el día ' + ultimo!.x"
+       (pointermove)="mover($event)" (pointerleave)="activo = null" (keydown)="teclado($event)" (blur)="activo = null">
+    <!-- Cuadrícula y eje y -->
+    <g *ngFor="let t of ticksY">
+      <line class="rejilla" [attr.x1]="margen.izq" [attr.x2]="margen.izq + anchoPlot" [attr.y1]="py(t)" [attr.y2]="py(t)"></line>
+      <text class="eje" [attr.x]="margen.izq - 8" [attr.y]="py(t)" text-anchor="end" dominant-baseline="middle">{{ formato(t) }}</text>
+    </g>
+    <!-- Eje x: día de vida -->
+    <text class="eje" *ngFor="let t of ticksX" [attr.x]="px(t)" [attr.y]="alto - 10" text-anchor="middle">Día {{ t }}</text>
+
+    <path class="area" *ngIf="area" [attr.d]="area"></path>
+    <path class="linea" [attr.d]="linea"></path>
+
+    <line class="cursor" *ngIf="puntoActivo" [attr.x1]="px(puntoActivo.x)" [attr.x2]="px(puntoActivo.x)"
+          [attr.y1]="margen.arr" [attr.y2]="margen.arr + altoPlot"></line>
+
+    <circle class="punto" *ngFor="let p of ordenados; let i = index" [attr.cx]="px(p.x)" [attr.cy]="py(p.y)"
+            [attr.r]="activo === i ? 6 : 4"></circle>
+
+    <!-- Etiqueta directa solo en el último valor -->
+    <text class="valor-final" [attr.x]="px(ultimo!.x) + 10" [attr.y]="py(ultimo!.y)" dominant-baseline="middle">
+      {{ formato(ultimo!.y) }} {{ unidad }}
+    </text>
+  </svg>
+
+  <div class="tooltip" *ngIf="puntoActivo" [class.izquierda]="tooltipALaIzquierda"
+       [style.left.px]="px(puntoActivo.x)" [style.top.px]="py(puntoActivo.y)">
+    <strong>{{ formato(puntoActivo.y) }} {{ unidad }}</strong>
+    <span>Día {{ puntoActivo.x }}<ng-container *ngIf="puntoActivo.detalle"> · {{ puntoActivo.detalle }}</ng-container></span>
+  </div>
+</div>

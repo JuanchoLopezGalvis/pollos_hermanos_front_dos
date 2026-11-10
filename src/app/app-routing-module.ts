@@ -3,6 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 
 import { Login } from './login/login';
 import { Menu } from './menu/menu';
+import { Seguimiento } from './seguimiento/seguimiento';
 import { Usuarios } from './usuarios/usuarios';
 import { Roles } from './roles/roles';
 import { Permisos } from './permisos/permisos';
@@ -119,7 +120,12 @@ const routes: Routes = [
     canActivate: [Protection],
     data: { permisos: permisosDe('/lotes') }
   },
-
+  {
+    path: 'seguimiento',
+    component: Seguimiento,
+    canActivate: [Protection],
+    data: { permisos: permisosDe('/seguimiento') }
+  },
   {
     path: 'usuarios',
     component: Usuarios,
