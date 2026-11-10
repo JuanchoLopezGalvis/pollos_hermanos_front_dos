@@ -1,0 +1,11 @@
+.spacer {
+  flex: 1;
+}
+
+code {
+  padding: 2px 8px;
+  border-radius: 8px;
+  background: var(--ph-verde-100);
+  font-size: 0.88rem;
+  color: var(--ph-tinta);
+}

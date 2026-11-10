@@ -1,0 +1,115 @@
+<div class="login-page">
+  <section class="presentacion">
+    <div class="fondo-puntos" aria-hidden="true"></div>
+    <div class="sol" aria-hidden="true"></div>
+    <div class="halo" aria-hidden="true"></div>
+
+    <div class="marca">
+      <img src="logo.svg" alt="" class="marca-logo" />
+      <div>
+        <span class="marca-nombre">Los Pollos Hermanos</span>
+        <span class="marca-sub">Finca avícola · producción y venta</span>
+      </div>
+    </div>
+
+    <div class="lema animate__animated animate__fadeInUp">
+      <span class="etiqueta"><i class="pi pi-sun" aria-hidden="true"></i> Gestión avícola</span>
+      <h1>Cada lote, <em>del primer día</em> hasta la venta.</h1>
+      <p>Galpones, alimentación, sanidad, costos y cartera en un solo lugar, con alertas cuando algo se sale de lo normal.</p>
+
+      <ul class="funciones">
+        <li><span class="icono"><i class="pi pi-home" aria-hidden="true"></i></span>Galpones y lotes</li>
+        <li><span class="icono"><i class="pi pi-chart-line" aria-hidden="true"></i></span>Seguimiento del peso</li>
+        <li><span class="icono"><i class="pi pi-wallet" aria-hidden="true"></i></span>Ventas y cartera</li>
+      </ul>
+    </div>
+
+    <div class="ciclo">
+      <span class="ciclo-titulo">Ciclo de engorde</span>
+      <ol>
+        <li class="etapa-1"><strong>Preiniciación</strong><span>Días 1 a 7</span></li>
+        <li class="etapa-2"><strong>Iniciación</strong><span>Días 8 a 21</span></li>
+        <li class="etapa-3"><strong>Engorde</strong><span>Días 22 a 35</span></li>
+        <li class="etapa-4"><strong>Finalización</strong><span>Día 36 a la venta</span></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="acceso">
+    <form [formGroup]="form" (ngSubmit)="onSubmit($event)" novalidate class="tarjeta animate__animated animate__fadeIn">
+      <div class="titulo">
+        <h2>Bienvenido de nuevo</h2>
+        <p>Ingresa con tu usuario o tu correo.</p>
+      </div>
+
+      <div class="field">
+        <label for="usuario">Usuario o correo</label>
+        <div class="con-icono">
+          <i class="pi pi-user" aria-hidden="true"></i>
+          <input
+            id="usuario"
+            pInputText
+            type="text"
+            formControlName="usuario"
+            autocomplete="username"
+            placeholder="tu.usuario o correo@ejemplo.com"
+            [attr.aria-invalid]="f['usuario'].invalid && f['usuario'].touched"
+          />
+        </div>
+        <small class="err" *ngIf="f['usuario'].invalid && f['usuario'].touched">
+          El usuario es obligatorio.
+        </small>
+      </div>
+
+      <div class="field">
+        <label for="contrasena">Contraseña</label>
+        <div class="con-icono">
+          <i class="pi pi-lock" aria-hidden="true"></i>
+          <p-password
+            inputId="contrasena"
+            formControlName="contrasena"
+            [toggleMask]="true"
+            [feedback]="false"
+            styleClass="clave"
+            placeholder="••••••••"
+            autocomplete="current-password">
+          </p-password>
+        </div>
+        <small class="err" *ngIf="f['contrasena'].invalid && f['contrasena'].touched">
+          La contraseña es obligatoria.
+        </small>
+      </div>
+
+      <label class="remember">
+        <input type="checkbox" formControlName="remember" />
+        Recordar mi usuario
+      </label>
+
+      <p-button
+        type="submit"
+        styleClass="btn-entrar"
+        [label]="loading ? 'Entrando...' : 'Entrar'"
+        icon="pi pi-arrow-right"
+        iconPos="right"
+        [loading]="loading"
+        [disabled]="loading">
+      </p-button>
+
+      <p class="mensaje" role="alert" *ngIf="errorMsg">
+        <i class="pi pi-exclamation-circle" aria-hidden="true"></i>
+        {{ errorMsg }}
+      </p>
+
+      <div class="separador"><span>¿Quieres comprar pollos?</span></div>
+
+      <a routerLink="/registro" class="btn-registro">
+        <i class="pi pi-user-plus" aria-hidden="true"></i>
+        Crea tu cuenta de cliente
+      </a>
+    </form>
+
+    <span class="copyright">
+      &copy; {{ anio }} Los Pollos Hermanos · Universidad El Bosque · Bases de Datos 2
+    </span>
+  </section>
+</div>
