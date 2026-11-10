@@ -1,0 +1,108 @@
+<div class="body-wrapper">
+  <div class="glass-container">
+    <app-sidebar></app-sidebar>
+
+    <main class="content">
+      <header>
+        <h1>Auditoría</h1>
+        <p>Todo lo que se crea, modifica o borra en la base de datos queda registrado por triggers de PostgreSQL. Esta pantalla es de solo lectura: la auditoría no se puede cambiar.</p>
+      </header>
+
+      <section class="card">
+        <form (ngSubmit)="buscar()" novalidate>
+          <div class="form-grid">
+            <div class="field">
+              <label for="a-tabla">Tabla</label>
+              <select id="a-tabla" pInputText name="tabla" [(ngModel)]="filtro.tabla">
+                <option [ngValue]="null">Todas</option>
+                <option *ngFor="let t of tablas" [ngValue]="t">{{ nombreTabla(t) }}</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="a-op">Operación</label>
+              <select id="a-op" pInputText name="operacion" [(ngModel)]="filtro.operacion">
+                <option [ngValue]="null">Todas</option>
+                <option *ngFor="let o of operaciones | keyvalue" [ngValue]="o.key">{{ o.value }}</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="a-usuario">Usuario</label>
+              <input id="a-usuario" pInputText name="usuario" [(ngModel)]="filtro.usuario" [disabled]="!!filtro.soloSistema" placeholder="Nombre de usuario" />
+              <label class="check-inline"><input type="checkbox" name="soloSistema" [(ngModel)]="filtro.soloSistema" /> Solo cambios del sistema</label>
+            </div>
+            <div class="field">
+              <label for="a-registro">Id del registro</label>
+              <input id="a-registro" pInputText name="registro" [(ngModel)]="filtro.registro" placeholder="Por ejemplo 52" />
+            </div>
+            <div class="field">
+              <label for="a-desde">Desde</label>
+              <input id="a-desde" pInputText type="date" name="desde" [(ngModel)]="filtro.desde" [max]="hoy" />
+            </div>
+            <div class="field">
+              <label for="a-hasta">Hasta</label>
+              <input id="a-hasta" pInputText type="date" name="hasta" [(ngModel)]="filtro.hasta" [max]="hoy" />
+            </div>
+          </div>
+          <div class="form-actions">
+            <p-button type="submit" label="Buscar" icon="pi pi-search" [loading]="loading"></p-button>
+            <p-button type="button" label="Limpiar" icon="pi pi-filter-slash" severity="secondary" [text]="true" (onClick)="limpiar()"></p-button>
+          </div>
+        </form>
+      </section>
+
+      <section class="card animate__animated animate__fadeIn" *ngIf="seleccionado as s">
+        <h2>{{ operaciones[s.operacion] }} en {{ nombreTabla(s.tabla) }}<span *ngIf="s.idRegistro"> · registro {{ s.idRegistro }}</span></h2>
+        <dl class="ficha">
+          <dt>Fecha</dt><dd>{{ s.fecha | date:'dd/MM/yyyy HH:mm:ss' }}</dd>
+          <dt>Usuario</dt><dd>{{ s.usuarioApp || 'Sistema' }} <span class="ayuda">(conexión {{ s.usuarioBd }})</span></dd>
+          <dt>Transacción</dt><dd>{{ s.idTransaccion }} <span class="ayuda">los cambios con el mismo número se hicieron en la misma operación</span></dd>
+        </dl>
+        <div class="table-wrapper" *ngIf="campos(s).length">
+          <table class="data-table">
+            <thead><tr><th>Columna</th><th>Antes</th><th>Después</th></tr></thead>
+            <tbody>
+              <tr *ngFor="let c of campos(s)" [class.activa]="c.cambio">
+                <td><strong *ngIf="c.cambio">{{ c.columna }}</strong><span *ngIf="!c.cambio">{{ c.columna }}</span></td>
+                <td>{{ c.antes }}</td>
+                <td>{{ c.despues }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="form-actions">
+          <p-button *ngIf="s.idRegistro" label="Ver historial de este registro" icon="pi pi-history" severity="secondary" [outlined]="true" (onClick)="historial(s)"></p-button>
+          <p-button label="Cerrar" severity="secondary" [text]="true" (onClick)="seleccionar(s)"></p-button>
+        </div>
+      </section>
+
+      <div *ngIf="loading" class="loading">Buscando información...</div>
+      <div *ngIf="!loading && errorMsg" class="error">{{ errorMsg }}</div>
+
+      <div class="table-wrapper" *ngIf="!loading && !errorMsg && registros.length">
+        <table class="data-table">
+          <thead>
+            <tr><th>Fecha</th><th>Usuario</th><th>Tabla</th><th>Operación</th><th class="num">Registro</th><th>Cambios</th><th></th></tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let r of registros" [class.activa]="seleccionado?.idAuditoria === r.idAuditoria">
+              <td>{{ r.fecha | date:'dd/MM/yyyy HH:mm' }}</td>
+              <td><strong *ngIf="r.usuarioApp">{{ r.usuarioApp }}</strong><span *ngIf="!r.usuarioApp" class="chip gris">Sistema</span></td>
+              <td>{{ nombreTabla(r.tabla) }}</td>
+              <td><span class="chip" [ngClass]="claseOperacion(r.operacion)">{{ operaciones[r.operacion] }}</span></td>
+              <td class="num">{{ r.idRegistro || '-' }}</td>
+              <td>{{ resumen(r) }}</td>
+              <td class="acciones"><p-button icon="pi pi-eye" [text]="true" ariaLabel="Ver detalle" (onClick)="seleccionar(r)"></p-button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div *ngIf="!loading && !errorMsg && !registros.length" class="no-data">No hay cambios que cumplan los filtros.</div>
+
+      <div class="toolbar" *ngIf="!loading && total > 0">
+        <p-button icon="pi pi-angle-left" label="Anterior" severity="secondary" [text]="true" [disabled]="pagina === 0" (onClick)="irA(pagina - 1)"></p-button>
+        <span class="ayuda">Página {{ pagina + 1 }} de {{ totalPaginas }} · {{ total }} cambios</span>
+        <p-button icon="pi pi-angle-right" iconPos="right" label="Siguiente" severity="secondary" [text]="true" [disabled]="pagina + 1 >= totalPaginas" (onClick)="irA(pagina + 1)"></p-button>
+      </div>
+    </main>
+  </div>
+</div>

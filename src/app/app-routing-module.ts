@@ -22,6 +22,7 @@ import { Ventas } from './ventas/ventas';
 import { PagoResultado } from './pago-resultado/pago-resultado';
 import { Registro } from './registro/registro';
 import { Portal } from './portal/portal';
+import { Auditoria } from './auditoria/auditoria';
 import { permisosDe } from './navegacion';
 import { PERMISO_PORTAL } from './services/auth.service';
 
@@ -143,6 +144,12 @@ const routes: Routes = [
     component: Permisos,
     canActivate: [Protection],
     data: { permisos: permisosDe('/permisos') }
+  },
+  {
+    path: 'auditoria',
+    component: Auditoria,
+    canActivate: [Protection],
+    data: { permisos: permisosDe('/auditoria') }
   },
 
   { path: '**', redirectTo: '/login' }

@@ -31,6 +31,7 @@ import { Ventas } from './ventas/ventas';
 import { PagoResultado } from './pago-resultado/pago-resultado';
 import { Registro } from './registro/registro';
 import { Portal } from './portal/portal';
+import { Auditoria } from './auditoria/auditoria';
 
 import { providePrimeNG } from 'primeng/config';
 import { TemaPollos } from './tema';
@@ -72,7 +73,8 @@ import { TokenInterceptor } from './services/token.interceptor';
     Ventas,
     PagoResultado,
     Registro,
-    Portal
+    Portal,
+    Auditoria
   ],
   imports: [
     BrowserModule,
