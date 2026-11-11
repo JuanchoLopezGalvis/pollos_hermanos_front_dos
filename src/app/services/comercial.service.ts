@@ -189,6 +189,11 @@ export class ComercialService {
     return this.http.get<PagoDTO[]>(`${this.api}/ventas/${idVenta}/pagos`);
   }
 
+  /** Registra que el cliente pagó en efectivo todo el saldo de la venta. */
+  pagarEnEfectivo(idVenta: number): Observable<VentaDTO> {
+    return this.http.post<VentaDTO>(`${this.api}/ventas/${idVenta}/pago-efectivo`, {});
+  }
+
   entregas(): Observable<EntregaDTO[]> {
     return this.http.get<EntregaDTO[]>(`${this.api}/entregas`);
   }

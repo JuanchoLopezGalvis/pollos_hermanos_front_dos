@@ -36,4 +36,10 @@ describe('ComercialService', () => {
     const req = http.expectOne(`${api}/ventas/7/entrega`);
     expect(req.request.body).toEqual({ idEmpleado: 3 });
   });
+
+  it('registra el pago en efectivo del saldo de una venta', () => {
+    service.pagarEnEfectivo(7).subscribe();
+    const req = http.expectOne(`${api}/ventas/7/pago-efectivo`);
+    expect(req.request.method).toBe('POST');
+  });
 });
