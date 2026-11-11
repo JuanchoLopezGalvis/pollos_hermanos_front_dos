@@ -14,8 +14,8 @@ import { hoyISO } from '../navegacion';
 type Pestana = 'ventas' | 'entregas' | 'cartera' | 'clientes';
 
 /**
- * Ventas en libras con sus pagos parciales (manuales o en línea por la pasarela
- * de pruebas), su entrega y la cartera vencida.
+ * Ventas en libras con sus pagos (en línea por la pasarela de pruebas o en
+ * efectivo registrado por el personal), su entrega y la cartera vencida.
  */
 @Component({
   selector: 'app-ventas',
@@ -57,6 +57,7 @@ export class Ventas implements OnInit {
 
   get puedeGestionar(): boolean { return this.auth.tienePermiso('venta.gestionar'); }
   get puedeCartera(): boolean { return this.auth.tieneAlguno(['cartera.ver', 'pago.registrar']); }
+  get puedeRegistrarPago(): boolean { return this.auth.tienePermiso('pago.registrar'); }
 
   get entregaSeleccionada(): EntregaDTO | undefined {
     return this.entregas.find(e => e.idVenta === this.seleccionada?.idVenta);
@@ -122,6 +123,20 @@ export class Ventas implements OnInit {
         this.cargar(e.idVenta);
       },
       error: (err) => this.messages.add({ severity: 'error', summary: 'No se actualizó la entrega', detail: mensajeError(err) })
+    });
+  }
+
+  /** Registra que el cliente pagó en efectivo todo el saldo de la venta seleccionada. */
+  pagarEnEfectivo(): void {
+    const v = this.seleccionada;
+    if (!v || !confirm(`¿El cliente pagó en efectivo el saldo de la venta ${v.idVenta}?`)) return;
+    this.guardando = true;
+    this.comercialSvc.pagarEnEfectivo(v.idVenta).pipe(finalize(() => this.guardando = false)).subscribe({
+      next: () => {
+        this.messages.add({ severity: 'success', summary: 'Pago en efectivo registrado', detail: `La venta ${v.idVenta} quedó pagada.` });
+        this.cargar(v.idVenta);
+      },
+      error: (err) => this.messages.add({ severity: 'error', summary: 'No se registró el pago', detail: mensajeError(err), life: 8000 })
     });
   }
 
